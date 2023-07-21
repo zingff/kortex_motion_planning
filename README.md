@@ -6,3 +6,6 @@ See [Tesseract Wiki](https://tesseract-docs.readthedocs.io/en/latest/_source/int
 
 ## Build
 See [Tesseract Wiki](https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html).
+
+## Others 
+NONE
