@@ -1,0 +1,11 @@
+# Request
+
+# Motion Plan - the trajectory we wish the robot to follow
+trajectory_msgs/JointTrajectory motion_plan
+
+---
+# Response
+
+# Success and error information
+bool success
+string message
