@@ -41,7 +41,7 @@
 
 #include <kortex_motion_planning/GenerateKortexMotionPlan.h>
 
-#include <kortex_driver/BaseCyclic_Feedback.h>  // to get current state
+#include <kortex_driver/BaseCyclic_Feedback.h>  // current state
 
 
 static const std::string TRANSITION_PLANNER = "TRANSITION";

@@ -131,27 +131,27 @@ target_include_directories(kortex_motion_widget_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
 
 
-# forking task
-add_executable(kortex_motion_forking_node src/forking_task.cpp)
+# # forking task
+# add_executable(kortex_motion_forking_node src/forking_task.cpp)
 
-target_link_libraries(
-  kortex_motion_forking_node
-  ${catkin_LIBRARIES}  # add this line to use ros properly
-  tesseract::tesseract_environment
-  tesseract::tesseract_command_language
-  tesseract::tesseract_task_composer
-  tesseract::tesseract_motion_planners_core
-  tesseract::tesseract_motion_planners_simple
-  tesseract::tesseract_motion_planners_ompl
-  tesseract::tesseract_motion_planners_trajopt
-  tesseract::tesseract_motion_planners_descartes
-  tesseract::tesseract_time_parameterization_isp)
+# target_link_libraries(
+#   kortex_motion_forking_node
+#   ${catkin_LIBRARIES}  # add this line to use ros properly
+#   tesseract::tesseract_environment
+#   tesseract::tesseract_command_language
+#   tesseract::tesseract_task_composer
+#   tesseract::tesseract_motion_planners_core
+#   tesseract::tesseract_motion_planners_simple
+#   tesseract::tesseract_motion_planners_ompl
+#   tesseract::tesseract_motion_planners_trajopt
+#   tesseract::tesseract_motion_planners_descartes
+#   tesseract::tesseract_time_parameterization_isp)
 
-target_include_directories(kortex_motion_forking_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
-target_include_directories(kortex_motion_forking_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
+# target_include_directories(kortex_motion_forking_node PRIVATE
+#     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#     "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
+# target_include_directories(kortex_motion_forking_node SYSTEM PRIVATE
+#     ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
 
 # Plugin Library
 add_library(${PROJECT_NAME}_plugins SHARED src/motoman_hc10_ikfast_plugin.cpp)
