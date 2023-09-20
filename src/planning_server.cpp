@@ -257,7 +257,7 @@ class PlanningServer
 
       // Save dot graph
       std::ofstream task_composer_data;
-      task_composer_data.open(tesseract_common::getTempPath() + TASK_PIPELINE + ".dot");
+      task_composer_data.open(tesseract_common::getTempPath() + TASK_PIPELINE + ".dot");  // /temp
       task->dump(task_composer_data);
       ROS_INFO("Dot graph saved!");
 

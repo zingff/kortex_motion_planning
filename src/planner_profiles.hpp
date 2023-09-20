@@ -18,6 +18,7 @@ static const std::string MIN_LENGTH_DEFAULT_NAMESPACE = "MinLengthTask";
 static const std::string CONTACT_CHECK_DEFAULT_NAMESPACE = "DiscreteContactCheckTask";
 static const std::string ISP_DEFAULT_NAMESPACE = "IterativeSplineParameterizationTask";
 
+// TODO： add new profiles
 template <typename FloatType>
 typename tesseract_planning::DescartesDefaultPlanProfile<FloatType>::Ptr createDescartesPlanProfile()
 {
