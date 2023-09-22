@@ -13,10 +13,10 @@
   <arg name="verbose" default="false"/>
 
   <!-- Load universal robot description format (URDF) -->
-  <param name="$(arg robot_description)" command="$(find xacro)/xacro --inorder '$(find kortex_description)/robots/urdf/gen3_robotiq_2f_85_tesseract.xacro'" />
+  <param name="$(arg robot_description)" command="$(find xacro)/xacro --inorder '$(find kortex_motion_planning)/config/robot/gen3_robotiq_2f_85_tesseract.xacro'" />
 
   <!-- The semantic description that corresponds to the URDF -->
-  <param name="$(arg robot_description)_semantic" textfile="$(find kortex_description)/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf" />
+  <param name="$(arg robot_description)_semantic" textfile="$(find kortex_motion_planning)/config/robot/gen3_robotiq_2f_85_tesseract.srdf" />
 
   <group unless="$(arg testing)">
     <!-- If needed, broadcast static tf for robot root -->
@@ -33,7 +33,7 @@
 
     <!-- Launch visualization -->
     <node if="$(arg rviz)" pkg="rviz" type="rviz" name="kortex_motion_planning_rviz"
-        args="-d $(find kortex_motion_planning)/config/kortex_motion_planning.rviz" />
+        args="-d $(find kortex_motion_planning)/config/tesseract/kortex_motion_planning.rviz"/>
   </group>
 
 </launch>

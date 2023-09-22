@@ -67,6 +67,11 @@ static const std::string MANIPULATOR_GROUP_NAME = "manipulator";
 static const std::string WORKING_FRAME_NAME = "base_link";
 static const std::string TCP_FRAME_NAME = "tool_frame";
 
+static const std::string TASK_COMPOSER_PLUGIN_PKG_NAME = "kortex_motion_planning";
+static const std::string TASK_COMPOSER_PLUGIN_SUB_PATH = "/config/tesseract/task_composer_plugins.yaml";
+
+// static const std::string URDF_FILE_PATH = "kortex_motion_planning/config/robot/gen3_robotiq_2f_85_tesseract.urdf";
+// static const std::string SRDF_FILE_PATH = "kortex_motion_planning/config/robot/gen3_robotiq_2f_85_tesseract.srdf";
 
 static const std::string URDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.urdf";
 static const std::string SRDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf";
@@ -238,12 +243,12 @@ class PlanningServer
       tesseract_planning::CompositeInstruction program = createProgram(manipulator_info, target_configuration);
 
       // Set up task composer problem
-      std::string config_path = ros::package::getPath("kortex_motion_planning");
+      std::string config_path = ros::package::getPath(TASK_COMPOSER_PLUGIN_PKG_NAME);
       if (config_path.empty())
       {
         ROS_ERROR("Failed to get path of config file, please check!");
       }
-      config_path += "/config/task_composer_plugins.yaml";
+      config_path += TASK_COMPOSER_PLUGIN_SUB_PATH;
       tesseract_planning::TaskComposerPluginFactory factory(YAML::LoadFile(config_path));
       ROS_INFO("Task composer plugin factory created!");
 

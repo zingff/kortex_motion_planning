@@ -33,10 +33,10 @@
 
     <!-- Launch visualization -->
     <node if="$(arg rviz)" pkg="rviz" type="rviz" name="kortex_motion_planning_rviz"
-        args="-d $(find kortex_motion_planning)/config/kortex_motion_planning.rviz" />
+        args="-d $(find kortex_motion_planning)/config/tesseract/kortex_motion_planning.rviz"/>
 
 
-    <node name="kortex_motion_execution_node" pkg="kortex_motion_planning" type="kortex_motion_execution_node"  output="screen">
+    <node name="kortex_motion_execution_node" pkg="kortex_motion_planning" type="kortex_motion_execution_node" output="screen">
     </node>
   </group>
 
