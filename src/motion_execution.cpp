@@ -13,10 +13,8 @@ static const int DOF = 7;
 static const double JOINT_DISTANCE_THRESHOLD = 0.01;
 static const double EXECUTION_TIME_THRESHOLD = 15.0;
 
-
 // using FJT = control_msgs::FollowJointTrajectoryAction;
 // TODO: modify the last waypoint to target
-
 
 class MotionExecutionServer
 {
@@ -28,8 +26,6 @@ class MotionExecutionServer
     // actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> motion_execution_client_("my_gen3/gen3_joint_trajectory_controller/follow_joint_trajectory", false);    
     // motion_execution_server_ = nh_.advertiseService(MOTION_EXECUTION_SERVER, &MotionExecutionServer::executionMotionPlan, this);
     // ROS_INFO("Ready to execute motion for Kinova Gen3!");
-
-
   }
 
   // Note: cb should be bool
@@ -71,6 +67,17 @@ class MotionExecutionServer
         ros::Duration(5.0).sleep();
       }
 
+      ROS_INFO("Original trajectory waypoints:");
+      for (size_t i = 0; i < goal_msg.trajectory.points.size(); ++i) {
+          std::string positions_str;
+          for (size_t j = 0; j < goal_msg.trajectory.points[i].positions.size(); ++j) {
+              positions_str += std::to_string(goal_msg.trajectory.points[i].positions[j]);
+              if (j < goal_msg.trajectory.points[i].positions.size() - 1) {
+                  positions_str += ", ";
+              }
+          }
+          ROS_INFO("Waypoint %zu: Time=%.2f s, Positions=%s", i, goal_msg.trajectory.points[i].time_from_start.toSec(), positions_str.c_str());
+      }
 
       // Replace the start state of the trajectory with the current joint state
       trajectory_msgs::JointTrajectoryPoint start_traj_point;
@@ -80,13 +87,38 @@ class MotionExecutionServer
       start_traj_point.accelerations = std::vector<double>(start_traj_point.positions.size(), 0);
       start_traj_point.effort = std::vector<double>(start_traj_point.positions.size(), 0);
       goal_msg.trajectory.points[0] = start_traj_point;
+      for (size_t i = 0; i < goal_msg.trajectory.points.size(); i++) {
+          // goal_msg.trajectory.points[i].time_from_start += goal_msg.trajectory.points[i].time_from_start + goal_msg.trajectory.points[i].time_from_start;
+          goal_msg.trajectory.points[i].time_from_start = ros::Duration(goal_msg.trajectory.points[i].time_from_start.toSec() * 3);
+      }
+
+      ROS_INFO("Modified trajectory waypoints:");
+      for (size_t i = 0; i < goal_msg.trajectory.points.size(); ++i) {
+          std::string positions_str;
+          for (size_t j = 0; j < goal_msg.trajectory.points[i].positions.size(); ++j) {
+              positions_str += std::to_string(goal_msg.trajectory.points[i].positions[j]);
+              if (j < goal_msg.trajectory.points[i].positions.size() - 1) {
+                  positions_str += ", ";
+              }
+          }
+          ROS_INFO("Waypoint %zu: Time=%.2f s, Positions=%s", i, goal_msg.trajectory.points[i].time_from_start.toSec(), positions_str.c_str());
+
+          std::string velocities_str;
+          for (size_t j = 0; j < goal_msg.trajectory.points[i].velocities.size(); ++j) {
+              velocities_str += std::to_string(goal_msg.trajectory.points[i].velocities[j]);
+              if (j < goal_msg.trajectory.points[i].velocities.size() - 1) {
+                  velocities_str += ", ";
+              }
+          }
+          ROS_WARN("Waypoint %zu: Time=%.2f s, Velocity=%s", i, goal_msg.trajectory.points[i].time_from_start.toSec(), velocities_str.c_str());
+      }
 
       // Send joint trajectory to robot
       ROS_INFO("Please pay attention! Moving the arm!");
       // TODO: merge into sendGoalAndWait()
       // TODO: modify into switch case form to consider all outcomes
       motion_execution_client_.sendGoal(goal_msg);
-      motion_execution_client_.waitForResult(ros::Duration(goal_msg.trajectory.points.back().time_from_start.sec) * 1.5);
+      motion_execution_client_.waitForResult(ros::Duration(goal_msg.trajectory.points.back().time_from_start.sec) * 3);
 
       if (motion_execution_client_.getState() != actionlib::SimpleClientGoalState::LOST)
       {
@@ -125,7 +157,6 @@ class MotionExecutionServer
     return joint_state;
   }
 
-
 };
 
 int main(int argc, char** argv)
@@ -139,7 +170,6 @@ int main(int argc, char** argv)
   ros::ServiceServer gen3_motion_execution_server = n.advertiseService(MOTION_EXECUTION_SERVICE, &MotionExecutionServer::executionMotionPlan, &gen3_motion_executor);
 
   ROS_INFO("Ready to execute motion for Kinova Gen3!");
-
 
   ros::spin();
 

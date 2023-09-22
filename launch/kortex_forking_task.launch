@@ -1,5 +1,0 @@
-  <launch>
-      <node name="kortex_motion_forking_node" pkg="kortex_motion_planning" type="kortex_motion_forking_node" ns="my_gen3" output="screen">
-      </node>
-
-  </launch>

@@ -82,7 +82,7 @@ std::shared_ptr<tesseract_planning::TrajOptPlanProfile> createTrajOptToolZFreePl
 {
   auto profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
   profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5.0);
-  profile->cartesian_coeff(5) = 0.0;
+  // profile->cartesian_coeff(5) = 0.0;
   return profile;
 }
 
@@ -111,13 +111,24 @@ std::shared_ptr<tesseract_planning::TrajOptCompositeProfile> createTrajOptCompos
   return profile;
 }
 
+
+// TODO: modify those parameters outside the code
 std::shared_ptr<tesseract_planning::TrajOptPlanProfile> createTrajOptPlanProfile()
 {
   auto profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
-  profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
-  // profile->cartesian_coeff(0) = 0;
-  profile->cartesian_coeff(4) = 0;
-  // profile->cartesian_coeff(2) = 0;
+  // profile->cartesian_coeff = Eigen::VectorXd::Constant(6, 1, 5);
+  // profile->cartesian_coeff(3) = 0;
+  // profile->cartesian_coeff(4) = 0;
+  // profile->cartesian_coeff(5) = 0;
+  profile->joint_coeff = Eigen::VectorXd::Zero(7);
+  profile->joint_coeff(0) = 0;
+  profile->joint_coeff(1) = 5;
+  profile->joint_coeff(2) = 50;
+  profile->joint_coeff(3) = 5;
+  profile->joint_coeff(4) = 50;
+  profile->joint_coeff(5) = 50;
+  profile->joint_coeff(6) = 50;
+
   return profile;
 }
 

@@ -5,6 +5,7 @@
 #include <kortex_motion_planning/ExecuteMotionPlan.h>
 #include <kortex_driver/BaseCyclic_Feedback.h>
 #include <Eigen/Geometry>
+#include <tf2/LinearMath/Quaternion.h>
 
 static const std::string PLANNING_SERVICE = "/my_gen3/motion_planning_server";
 static const std::string MOTION_EXECUTION_SERVICE = "/my_gen3/motion_execution_server";
@@ -21,49 +22,68 @@ class KortexMotionWidget
   }
   void plan()
   {
-    auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
-    double roll = stateFeedback->base.tool_pose_theta_x / (180 / M_PI);
-    double pitch = stateFeedback->base.tool_pose_theta_y / (180 / M_PI);    
-    double yaw = stateFeedback->base.tool_pose_theta_z / (180 / M_PI);
-    roll = roll - M_PI;
-    pitch = pitch - M_PI;
+    // auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
+    // double roll = stateFeedback->base.tool_pose_theta_x / (180 / M_PI);
+    // double pitch = stateFeedback->base.tool_pose_theta_y / (180 / M_PI);    
+    // double yaw = stateFeedback->base.tool_pose_theta_z / (180 / M_PI);
+    // roll = roll - M_PI;
+    // pitch = pitch - M_PI;
 
-    Eigen::Vector3d euler(roll, pitch, yaw);
-    Eigen::AngleAxisd rotation(M_PI / 1, Eigen::Vector3d::UnitZ());
-    euler = rotation.toRotationMatrix() * euler;
-    std::cout << euler << std::endl;
+    // Eigen::Vector3d euler(roll, pitch, yaw);
+    // Eigen::AngleAxisd rotation(M_PI / 1, Eigen::Vector3d::UnitZ());
+    // euler = rotation.toRotationMatrix() * euler;
+    // std::cout << euler << std::endl;
 
-    double x = stateFeedback->base.tool_pose_x;
-    double y = stateFeedback->base.tool_pose_y;
-    double z = stateFeedback->base.tool_pose_z;
+    // double x = stateFeedback->base.tool_pose_x;
+    // double y = stateFeedback->base.tool_pose_y;
+    // double z = stateFeedback->base.tool_pose_z;
 
     Eigen::Quaterniond target_quaternion;
-    target_quaternion = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
-              * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
-              * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
-              // * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitY());
-    std::cout << target_quaternion.x() << ", " 
-              << target_quaternion.y() << ", "
-              << target_quaternion.z() << ", "
-              << target_quaternion.w() << std::endl;
-// -0.15135, 0.235484, 0.557796, -115.418, 178.321, 80.9466
+    // target_quaternion = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
+    //           * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
+    //           * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+    //           // * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitY());
+    // std::cout << target_quaternion.x() << ", " 
+    //           << target_quaternion.y() << ", "
+    //           << target_quaternion.z() << ", "
+    //           << target_quaternion.w() << std::endl;
 
+    // feeding
     target_pose_.position.x = -0.15135;
     target_pose_.position.y = 0.235484;
     target_pose_.position.z = 0.557796;
-    // target_pose_.position.x = x;
-    // target_pose_.position.y = y;
-    // target_pose_.position.z = z;
-    // 0.2497374, 0.8497921, 0.2278447, 0.4044396
-// 0.3372995, 0.4143812, -0.6379122, 0.5546038
-    target_pose_.orientation.x = 0.3372995;
-    target_pose_.orientation.y = 0.4143812;
-    target_pose_.orientation.z = -0.6379122;
-    target_pose_.orientation.w = 0.5546038;
-    // target_pose_.orientation.x = target_quaternion.x();
-    // target_pose_.orientation.y = target_quaternion.y();
-    // target_pose_.orientation.z = target_quaternion.z();
-    // target_pose_.orientation.w = target_quaternion.w();
+    target_pose_.orientation.x = 0.3872724;
+    target_pose_.orientation.y = -0.4914169;
+    target_pose_.orientation.z = -0.604657;
+    target_pose_.orientation.w = 0.4928685;
+
+    // // pre-feeding
+    // target_pose_.position.x = 0.31029;
+    // target_pose_.position.y = -0.00418602;
+    // target_pose_.position.z = 0.261058 + 0.12;
+    // target_pose_.orientation.x = 0.683811;
+    // target_pose_.orientation.y = 0.703735;
+    // target_pose_.orientation.z = 0.128924;
+    // target_pose_.orientation.w = 0.143314;
+
+    tf2::Quaternion quaternion;
+    quaternion.setX(target_pose_.orientation.x);
+    quaternion.setY(target_pose_.orientation.y);
+    quaternion.setZ(target_pose_.orientation.z);
+    quaternion.setW(target_pose_.orientation.w);
+    quaternion.normalize();
+
+    target_pose_.orientation.x = quaternion.getX();
+    target_pose_.orientation.y = quaternion.getY();
+    target_pose_.orientation.z = quaternion.getZ();
+    target_pose_.orientation.w = quaternion.getW();
+
+    std::cout << "normalized quaternion:" << std::endl;
+    std::cout << "x: " << target_pose_.orientation.x << std::endl;
+    std::cout << "y: " << target_pose_.orientation.y << std::endl;
+    std::cout << "z: " << target_pose_.orientation.z << std::endl;
+    std::cout << "w: " << target_pose_.orientation.w << std::endl;
+
     motion_planning_service_.request.target_pose = target_pose_;
     if (motion_planning_client_.call(motion_planning_service_.request, motion_planning_service_.response))
     {
@@ -76,7 +96,6 @@ class KortexMotionWidget
       ROS_ERROR("Failed to call kortex motion planning service!");
       exit(1);
     }
-  
   }
 
   void execute()
@@ -100,9 +119,6 @@ class KortexMotionWidget
     }
   }
 
-
-
-
   private:
   ros::NodeHandle nh_;
   geometry_msgs::Pose target_pose_;
@@ -112,8 +128,6 @@ class KortexMotionWidget
   kortex_motion_planning::GenerateKortexMotionPlan motion_planning_service_;
   kortex_motion_planning::ExecuteMotionPlan motion_execution_service_;
   kortex_motion_planning::GenerateKortexMotionPlanResponse motion_plan_response_;
-  
-
 };
 
 int main(int argc, char **argv)
@@ -129,7 +143,6 @@ int main(int argc, char **argv)
   auto start_time = std::chrono::system_clock::now();
   auto start_time_stamp = std::chrono::system_clock::to_time_t(start_time);
   ROS_INFO("Motion planning started finished at %s", std::ctime(&start_time_stamp));
-
 
   KMT.plan();
 
@@ -149,7 +162,6 @@ int main(int argc, char **argv)
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     KMT.execute();
     ROS_INFO("Going to execute motion, attention!");
-
   }
   else if (decision == 0)
   {

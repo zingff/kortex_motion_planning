@@ -51,10 +51,10 @@ static const std::string PROFILE = "GEN3";
 static const std::string PROFILE2 = "GEN3_FREESPACE";
 static const std::string PLANNING_SERVICE = "/my_gen3/motion_planning_server";
 static const std::string MONITOR_NAMESPACE = "gen3_environment";
-static const std::string TASK_PIPELINE = "Gen3PipelineTest";
+static const std::string TASK_PIPELINE = "Gen3Pipeline";
 static const std::string STATE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
 
-static const double MAX_TCP_SPEED = 0.20; // m/s
+static const double MAX_TCP_SPEED = 0.2; // m/s
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
@@ -62,11 +62,14 @@ const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
 static const int DOF = 7;
 
 static const std::string MANIPULATOR_GROUP_NAME = "manipulator";
-static const std::string WORKING_FRAME_NAME = "link_0";
-static const std::string TCP_FRAME_NAME = "end_effector_link";
+// static const std::string WORKING_FRAME_NAME = "link_0";
+// static const std::string TCP_FRAME_NAME = "end_effector_link";
+static const std::string WORKING_FRAME_NAME = "base_link";
+static const std::string TCP_FRAME_NAME = "tool_frame";
 
-static const std::string URDF_FILE_PATH = "kortex_description/robots/srdf/gen3.urdf";
-static const std::string SRDF_FILE_PATH = "kortex_description/robots/srdf/gen3.srdf";
+
+static const std::string URDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.urdf";
+static const std::string SRDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf";
 
 // TODO: modify the server within the class
 // suanle youdiankongbu
@@ -147,11 +150,11 @@ class PlanningServer
         createTrajOptCompositeProfile());
       ROS_INFO("TrajOpt composite profile added!");
 
-      // profile_dictionary_->addProfile<tesseract_planning::TrajOptPlanProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, createTrajOptPlanProfile());
-      // ROS_INFO("TrajOpt plan profile added!");
+      profile_dictionary_->addProfile<tesseract_planning::TrajOptPlanProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, createTrajOptPlanProfile());
+      ROS_INFO("TrajOpt plan profile added!");
 
-      profile_dictionary_->addProfile<tesseract_planning::TrajOptPlanProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, createTrajOptToolZFreePlanProfile());
-      ROS_INFO("TrajOpt plan profile (z axis rotation-free) added!");
+      // profile_dictionary_->addProfile<tesseract_planning::TrajOptPlanProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, createTrajOptToolZFreePlanProfile());
+      // ROS_INFO("TrajOpt plan profile (z axis rotation-free) added!");
 
       profile_dictionary_->addProfile<tesseract_planning::DescartesPlanProfile<float>>(
         DESCARTES_DEFAULT_NAMESPACE, PROFILE, 
@@ -190,8 +193,8 @@ class PlanningServer
       joint_names_ = env_->getJointGroup(manipulator_info.manipulator)->getJointNames();
       ROS_INFO("Joint names got!");
       auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
-      Eigen::VectorXd start_configuration(7);
-      for (int i = 0; i < 7; i++)
+      Eigen::VectorXd start_configuration(DOF);
+      for (int i = 0; i < DOF; i++)
       {
         double joint_position = stateFeedback->actuators[i].position/(180.0/M_PI);
         // std::cout << "The joint position is: " << joint_position << std::endl;
