@@ -20,7 +20,10 @@ static const std::string ISP_DEFAULT_NAMESPACE = "IterativeSplineParameterizatio
 
 // TODO： add new profiles
 template <typename FloatType>
-typename tesseract_planning::DescartesDefaultPlanProfile<FloatType>::Ptr createDescartesPlanProfile()
+typename 
+
+// Create Descartes profile
+tesseract_planning::DescartesDefaultPlanProfile<FloatType>::Ptr createDescartesPlanProfile()
 {
   auto profile = std::make_shared<tesseract_planning::DescartesDefaultPlanProfile<FloatType>>();
   profile->num_threads = static_cast<int>(std::thread::hardware_concurrency());
@@ -56,6 +59,7 @@ typename tesseract_planning::DescartesDefaultPlanProfile<FloatType>::Ptr createD
   return profile;
 }
 
+// Create OMPL plan profile
 tesseract_planning::OMPLDefaultPlanProfile::Ptr createOMPLProfile()
 {
   // OMPL freespace and transition profiles
@@ -78,6 +82,7 @@ tesseract_planning::OMPLDefaultPlanProfile::Ptr createOMPLProfile()
   return profile;
 }
 
+// Create TrajOpt Toolz free plan profile
 std::shared_ptr<tesseract_planning::TrajOptPlanProfile> createTrajOptToolZFreePlanProfile()
 {
   auto profile = std::make_shared<tesseract_planning::TrajOptDefaultPlanProfile>();
@@ -86,6 +91,7 @@ std::shared_ptr<tesseract_planning::TrajOptPlanProfile> createTrajOptToolZFreePl
   return profile;
 }
 
+// Create TrajOpt composite profile
 std::shared_ptr<tesseract_planning::TrajOptCompositeProfile> createTrajOptCompositeProfile()
 {
   // TrajOpt profiles
@@ -111,7 +117,7 @@ std::shared_ptr<tesseract_planning::TrajOptCompositeProfile> createTrajOptCompos
   return profile;
 }
 
-
+// Create TrajOpt plan profile
 // TODO: modify those parameters outside the code
 std::shared_ptr<tesseract_planning::TrajOptPlanProfile> createTrajOptPlanProfile()
 {
@@ -132,6 +138,7 @@ std::shared_ptr<tesseract_planning::TrajOptPlanProfile> createTrajOptPlanProfile
   return profile;
 }
 
+// Create simple planner profile
 std::shared_ptr<tesseract_planning::SimplePlannerPlanProfile> createSimplePlannerProfile()
 {
   auto profile = std::make_shared<tesseract_planning::SimplePlannerLVSPlanProfile>(10 * M_PI / 180, 0.2, 10 * M_PI / 180, 1);
