@@ -1,0 +1,31 @@
+# a possible feeding configuration
+Current position (rad): 
+6.20778, 1.51594, 0.826369, 4.22264, 0.0118483, 5.607, 2.39283
+Current position (deg): 
+355.706, 86.8633, 47.3509, 241.957, 0.678905, 321.281, 137.109
+Current Cartesian pose of the tool: 
+-0.0260442, 0.262999, 0.555546, -102.538, -179.079, 77.6297
+
+# a possible feeding configuration
+Current position (rad): 
+3.15489, 5.19373, 4.09163, 4.02183, 5.24631, 5.79855, 3.32357
+Current position (deg): 
+180.775, 297.601, 234.451, 230.451, 300.613, 332.257, 190.44
+Current Cartesian pose of tool frame (ZYX): 
+-0.146158, 0.2601, 0.57869, -102.272, -178.89, 78.0215
+Current Cartesian pose of tool frame (Quaternion): 
+-0.146158, 0.2601, 0.57869, 0.389033, -0.4924, -0.601118, 0.494825
+
+# forking initial upright configuration
+Current position (rad): 
+6.28267, 6.12716, 3.15098, 3.99304, 0.0248669, 5.68535, 1.58079
+Current position (deg): 
+359.997, 351.087, 180.551, 228.801, 1.42487, 325.771, 90.5794
+Current Cartesian pose of tool frame (ZYX): 
+0.31029, -0.00418602, 0.261058, 157.855, 1.4588, 91.3675
+Current Cartesian pose of tool frame (Quaternion): 
+0.31029, -0.00418602, 0.261058, 0.683836, 0.703774, 0.128735, 0.143173
+
+
+# temp: home
+3.03043e-05, 0.261897, 3.14138, 4.01388, 1.71222e-05, 0.959808, 1.5707
