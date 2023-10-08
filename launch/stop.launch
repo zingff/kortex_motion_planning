@@ -1,0 +1,5 @@
+  <launch>
+      <node name="stop_test" pkg="kortex_motion_planning" type="stop_test" ns="my_gen3" output="screen">
+      </node>
+
+  </launch>

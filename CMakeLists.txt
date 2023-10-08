@@ -5,6 +5,8 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+SET(KORTEX_CONFIG_DIR "${PROJECT_SOURCE_DIR}/config")
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
@@ -20,13 +22,13 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation # for custom service
 )
 
+find_package(pinocchio REQUIRED)
 find_package(descartes_light REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_task_composer REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
 
 # find_package(LAPACK REQUIRED) # Requried for ikfast
-
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(include ${PROJECT_SOURCE_DIR}/src)
@@ -35,6 +37,16 @@ include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/inclu
 include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/include/messages)
 include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/include/common)
 
+include_directories(
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIRS}
+        ${pinocchio_INCLUDE_DIRS}
+)
+
+link_directories(
+        ${pinocchio_LIBRARY_DIRS}
+)
 
 # Generate custom service
 add_service_files(
@@ -50,14 +62,11 @@ generate_messages(
 catkin_package(
   CATKIN_DEPENDS message_runtime
 )
-
 catkin_package(
   CATKIN_DEPENDS
   moveit_core
   moveit_ros_planning_interface
 )
-
-# include_directories(include /usr/include/urdf_parser)
 
 # Gripper command
 add_executable(gripper_command src/utilities/gripper_command.cpp)
@@ -130,28 +139,17 @@ target_include_directories(kortex_motion_widget_node PRIVATE
 target_include_directories(kortex_motion_widget_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
 
+message("Pinocchio include dirs: ${pinocchio_INCLUDE_DIRS}")
+message("Pinocchio library dirs: ${pinocchio_LIBRARY_DIRS}")
+    
 
-# # forking task
-# add_executable(kortex_motion_forking_node src/forking_task.cpp)
-
-# target_link_libraries(
-#   kortex_motion_forking_node
-#   ${catkin_LIBRARIES}  # add this line to use ros properly
-#   tesseract::tesseract_environment
-#   tesseract::tesseract_command_language
-#   tesseract::tesseract_task_composer
-#   tesseract::tesseract_motion_planners_core
-#   tesseract::tesseract_motion_planners_simple
-#   tesseract::tesseract_motion_planners_ompl
-#   tesseract::tesseract_motion_planners_trajopt
-#   tesseract::tesseract_motion_planners_descartes
-#   tesseract::tesseract_time_parameterization_isp)
-
-# target_include_directories(kortex_motion_forking_node PRIVATE
-#     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#     "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
-# target_include_directories(kortex_motion_forking_node SYSTEM PRIVATE
-#     ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
+# for test use
+add_executable(collision_detection src/collision_detection.cpp)
+target_link_libraries(
+  collision_detection
+  ${catkin_LIBRARIES}  # add this line to use ros properly
+  pinocchio
+)
 
 # Plugin Library
 add_library(${PROJECT_NAME}_plugins SHARED src/motoman_hc10_ikfast_plugin.cpp)

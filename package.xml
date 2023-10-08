@@ -20,6 +20,7 @@
   <depend>tesseract_kinematics</depend>
   <depend>geometry_msgs</depend>
   <depend>trajectory_msgs</depend>
+  <depend>pinocchio</depend>
 
 
   <build_depend>message_generation</build_depend>
