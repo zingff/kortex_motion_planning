@@ -29,3 +29,7 @@ Current Cartesian pose of tool frame (Quaternion):
 
 # temp: home
 3.03043e-05, 0.261897, 3.14138, 4.01388, 1.71222e-05, 0.959808, 1.5707
+
+# test: welding init
+0.563152, -0.157454, 0.160644, 0.596603, 0.627089, 0.352663, 0.355602
+

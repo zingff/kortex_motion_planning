@@ -89,7 +89,7 @@ class MotionExecutionServer
       goal_msg.trajectory.points[0] = start_traj_point;
       for (size_t i = 0; i < goal_msg.trajectory.points.size(); i++) {
           // goal_msg.trajectory.points[i].time_from_start += goal_msg.trajectory.points[i].time_from_start + goal_msg.trajectory.points[i].time_from_start;
-          goal_msg.trajectory.points[i].time_from_start = ros::Duration(goal_msg.trajectory.points[i].time_from_start.toSec() * 3);
+          goal_msg.trajectory.points[i].time_from_start = ros::Duration(goal_msg.trajectory.points[i].time_from_start.toSec() * 2);
       }
 
       ROS_INFO("Modified trajectory waypoints:");
@@ -118,7 +118,7 @@ class MotionExecutionServer
       // TODO: merge into sendGoalAndWait()
       // TODO: modify into switch case form to consider all outcomes
       motion_execution_client_.sendGoal(goal_msg);
-      motion_execution_client_.waitForResult(ros::Duration(goal_msg.trajectory.points.back().time_from_start.sec) * 3);
+      motion_execution_client_.waitForResult(ros::Duration(goal_msg.trajectory.points.back().time_from_start.sec) * 0.5);
 
       if (motion_execution_client_.getState() != actionlib::SimpleClientGoalState::LOST)
       {
