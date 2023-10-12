@@ -1,4 +1,4 @@
-#include "planner_profiles.hpp"
+#include <kortex_motion_planning/planner_profiles.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
 
@@ -369,6 +369,7 @@ class PlanningServer
       {
         res.message = ex.what();
         res.success = false;
+        return false;
       }
       return res.success;
   }

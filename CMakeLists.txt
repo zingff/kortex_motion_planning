@@ -75,7 +75,6 @@ target_link_libraries(gripper_command ${catkin_LIBRARIES} )
 
 # Planning server
 add_executable(${PROJECT_NAME}_node src/planning_server.cpp)
-
 target_link_libraries(
   ${PROJECT_NAME}_node
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -95,9 +94,31 @@ target_include_directories(${PROJECT_NAME}_node PRIVATE
 target_include_directories(${PROJECT_NAME}_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
 
+# Planning server new
+add_executable(${PROJECT_NAME}_new_node 
+  src/planning_server_new.cpp)
+  # src/include/kortex_motion_planning/planning_server.h)
+target_link_libraries(
+  ${PROJECT_NAME}_new_node
+  ${catkin_LIBRARIES}  # add this line to use ros properly
+  tesseract::tesseract_environment
+  tesseract::tesseract_command_language
+  tesseract::tesseract_task_composer
+  tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_motion_planners_simple
+  tesseract::tesseract_motion_planners_ompl
+  tesseract::tesseract_motion_planners_trajopt
+  tesseract::tesseract_motion_planners_descartes
+  tesseract::tesseract_time_parameterization_isp)
+
+target_include_directories(${PROJECT_NAME}_new_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
+target_include_directories(${PROJECT_NAME}_new_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
+
 # Motion executor
 add_executable(kortex_motion_execution_node src/motion_execution.cpp)
-
 target_link_libraries(
   kortex_motion_execution_node
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -119,7 +140,6 @@ target_include_directories(kortex_motion_execution_node SYSTEM PRIVATE
 
 # Motion widget
 add_executable(kortex_motion_widget_node src/main.cpp)
-
 target_link_libraries(
   kortex_motion_widget_node
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -140,10 +160,13 @@ target_include_directories(kortex_motion_widget_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
 
 message("Pinocchio include dirs: ${pinocchio_INCLUDE_DIRS}")
+# /home/zing/mealAssistiveRobot/sla_ws/devel/include
 message("Pinocchio library dirs: ${pinocchio_LIBRARY_DIRS}")
+# none
     
 
-# for test use
+# collision detection
+link_directories(/home/zing/mealAssistiveRobot/sla_ws/devel/lib) # path to libpinocchio
 add_executable(collision_detection src/collision_detection.cpp)
 target_link_libraries(
   collision_detection
