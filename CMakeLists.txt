@@ -27,6 +27,8 @@ find_package(descartes_light REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_task_composer REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
+find_package(Qt5 REQUIRED Widgets)
+find_package(QCustomPlot REQUIRED)
 
 # find_package(LAPACK REQUIRED) # Requried for ikfast
 
@@ -36,6 +38,8 @@ include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/inclu
 include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/include/client_stubs)
 include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/include/messages)
 include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/include/common)
+include_directories(${QCustomPlot_INCLUDE_DIRS})
+
 
 include_directories(
         include
@@ -47,6 +51,7 @@ include_directories(
 link_directories(
         ${pinocchio_LIBRARY_DIRS}
 )
+
 
 # Generate custom service
 add_service_files(
@@ -172,6 +177,15 @@ target_link_libraries(
   collision_detection
   ${catkin_LIBRARIES}  # add this line to use ros properly
   pinocchio
+)
+
+# qt
+add_executable(joint_torque_realtime_plot src/joint_torque_realtime_plot.cpp)
+target_link_libraries(
+  joint_torque_realtime_plot
+  ${catkin_LIBRARIES}  # add this line to use ros properly
+  Qt5::Widgets
+  ${QCustomPlot_LIBRARIES}
 )
 
 # Plugin Library

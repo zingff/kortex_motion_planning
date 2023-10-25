@@ -1,5 +1,14 @@
   <launch>
+      <!-- motion planning trigger -->
       <node name="kortex_motion_widget_node" pkg="kortex_motion_planning" type="kortex_motion_widget_node" ns="my_gen3" output="screen">
       </node>
+
+      <!-- collision detection -->
+      <group>
+        <node name="collision_detection" pkg="kortex_motion_planning" type="collision_detection" ns="my_gen3" output="screen">
+        </node>
+        <!-- <node name="qt_plot" pkg="kortex_motion_planning" type="qt_plot" ns="my_gen3" output="screen">
+        </node> -->
+      </group>
 
   </launch>

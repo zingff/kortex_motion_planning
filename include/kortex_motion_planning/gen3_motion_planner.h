@@ -1,9 +1,12 @@
-#ifndef PLANNING_SERVER_H
-#define PLANNING_SERVER_H
+#ifndef GEN3_MOTION_PLANNER_H
+#define GEN3_MOTION_PLANNER_H
 
 #include <kortex_motion_planning/planner_profiles.hpp>
-#include <ros/ros.h>
+// #include <kortex_motion_planning/planning_server.h>
+#include <console_bridge/console.h>
+// todo: to delete
 #include <ros/package.h>
+
 #include <tesseract_common/timer.h>
 #include <tesseract_time_parameterization/isp/iterative_spline_parameterization.h>
 #include <tesseract_monitoring/environment_monitor.h>
@@ -30,7 +33,6 @@
 #include <urdf_parser/urdf_parser.h>
 #include <moveit/robot_model/robot_model.h>
 #include <kortex_motion_planning/GenerateKortexMotionPlan.h>
-#include <kortex_driver/BaseCyclic_Feedback.h>
 
 static const std::string TRANSITION_PLANNER = "TRANSITION";
 static const std::string FREESPACE_PLANNER = "FREESPACE";
@@ -53,26 +55,22 @@ static const std::string TASK_COMPOSER_PLUGIN_SUB_PATH = "/config/tesseract/task
 static const std::string URDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.urdf";
 static const std::string SRDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf";
 
-class PlanningServer
+class Gen3MotionPlanner
 {
 public:
-  PlanningServer(ros::NodeHandle n);
-  bool plan(
-      kortex_motion_planning::GenerateKortexMotionPlan::Request &req,
-      kortex_motion_planning::GenerateKortexMotionPlan::Response &res);
+  Gen3MotionPlanner();
+  trajectory_msgs::JointTrajectory createGen3MotionPlan(
+    const std::string urdf_xml_string,
+    const std::string srdf_xml_string,
+    Eigen::VectorXd current_joint_position,
+    Eigen::Translation3d target_translation,
+    Eigen::Quaterniond target_quaternion
+  );
 
 private:
-  ros::NodeHandle nh_;
-  bool plotting_ = true;
-  bool rviz_ = true;
-  bool ifopt_ = false;
-  bool verbose_ = false;
-  bool debug_ = false;
-  int method_id_;
-
   tesseract_common::JointTrajectory joint_trajectory_;
 
-  std::string urdf_xml_string_, srdf_xml_string_;
+  // std::string urdf_xml_string_, srdf_xml_string_;
   urdf::ModelInterfaceSharedPtr urdf_model_;
   srdf::ModelSharedPtr srdf_model_;
   moveit::core::RobotModelPtr robot_model_;
@@ -86,6 +84,8 @@ private:
   std::vector<std::string> joint_names_;
   tesseract_common::ManipulatorInfo manipulator_info_;
 
+  trajectory_msgs::JointTrajectory motion_plan_;
+
   void getCurrentPosition();
   tesseract_common::JointTrajectory tcpSpeedLimiter(
       const tesseract_common::JointTrajectory &input_trajectory,
@@ -94,51 +94,54 @@ private:
   tesseract_planning::CompositeInstruction createProgram(
       const tesseract_common::ManipulatorInfo &info,
       const Eigen::Isometry3d &end_pose);
-
 };
 
-PlanningServer::PlanningServer(ros::NodeHandle n)
-    : nh_(n)
-    , env_(std::make_shared<tesseract_environment::Environment>())
+Gen3MotionPlanner::Gen3MotionPlanner()
+: env_(std::make_shared<tesseract_environment::Environment>())
 {
-  // Load parameter from param server
-  ROS_INFO("Ready to load parameters!");
-  n.param("plotting", plotting_, true);
-  n.param("rviz", rviz_, true);
-  n.param("ifopt", ifopt_, false);
-  n.param("debug", debug_, false);
-  n.param("verbose", verbose_, false);
-  n.param("method_id", method_id_, 1);
-  n.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string_);
-  n.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string_);
+  
+}
 
-  // Create robot model
-  ROS_INFO("Ready to create robot model!");
+trajectory_msgs::JointTrajectory Gen3MotionPlanner::createGen3MotionPlan(
+    const std::string urdf_xml_string,
+    const std::string srdf_xml_string,
+    Eigen::VectorXd current_joint_position,
+    Eigen::Translation3d target_translation,
+    Eigen::Quaterniond target_quaternion
+) // : env_(std::make_shared<tesseract_environment::Environment>())
+{ 
+  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+  // Create robot model 
+  CONSOLE_BRIDGE_logInform("Ready to create robot model!");
   auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
+  // auto locator = std::make_shared<TesseractSupportResourceLocator>();
+
   tesseract_common::fs::path urdf_path = locator->locateResource("package://" + URDF_FILE_PATH)->getFilePath();
   tesseract_common::fs::path srdf_path = locator->locateResource("package://" + SRDF_FILE_PATH)->getFilePath();
 
-  if (!env_->init(urdf_xml_string_, srdf_xml_string_, locator))
-  {
-    ROS_ERROR("Failed to initialize environment!");
-  }
-  ROS_INFO("Environment initialized!");
 
-  urdf_model_ = urdf::parseURDF(urdf_xml_string_);
-  ROS_INFO("URDF parsed!");
+  // note: the 2 string are args 
+  if (!env_->init(urdf_xml_string, srdf_xml_string, locator))
+  {
+    CONSOLE_BRIDGE_logError("Failed to initialize environment!");
+  }
+  CONSOLE_BRIDGE_logInform("Environment initialized!");
+
+  urdf_model_ = urdf::parseURDF(urdf_xml_string);
+  CONSOLE_BRIDGE_logInform("URDF parsed!");
   srdf_model_ = srdf::ModelSharedPtr(new srdf::Model);
-  srdf_model_->initString(*urdf_model_, srdf_xml_string_);
-  ROS_INFO("SRDF initialized!");
+  srdf_model_->initString(*urdf_model_, srdf_xml_string);
+  CONSOLE_BRIDGE_logInform("SRDF parsed!");
   assert(urdf_model_ != nullptr && srdf_model_ != nullptr);
   robot_model_.reset(new moveit::core::RobotModel(urdf_model_, srdf_model_));
-  ROS_INFO("Robot model loaded!");
+  CONSOLE_BRIDGE_logInform("Robot model loaded!");
 
   manipulator_info_ = tesseract_common::ManipulatorInfo(MANIPULATOR_GROUP_NAME, WORKING_FRAME_NAME, TCP_FRAME_NAME);
   std::vector<std::string> joint_names_ = env_->getJointGroup(manipulator_info_.manipulator)->getJointNames();
-  ROS_INFO("Joint names got!");
+  CONSOLE_BRIDGE_logInform("Joint names got!");
 
-  getCurrentPosition();
-  env_->setState(joint_names_, current_joint_position_);
+  // get current position
+  env_->setState(joint_names_, current_joint_position);
 
   // Create environment monitor
   monitor_ = std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(env_, MONITOR_NAMESPACE);
@@ -147,11 +150,12 @@ PlanningServer::PlanningServer(ros::NodeHandle n)
   monitor_->startStateMonitor("/my_gen3/joint_states", true);
 
   // Create plotter
-  if(plotting_)
+  // todo: check the logic variable
+  if(true)
   {
     // plotter_ = std::make_shared<tesseract_rosutils::ROSPlotting>(env_->getRootLinkName());
     plotter_ = std::make_shared<tesseract_rosutils::ROSPlotting>(env_->getSceneGraph()->getRoot());  // equivalent
-    ROS_INFO("Monitor created!");
+    CONSOLE_BRIDGE_logInform("Monitor created!");
 
     // TODO: here to define the original exampel class
     profile_dictionary_ = std::make_shared<tesseract_planning::ProfileDictionary>();
@@ -159,63 +163,60 @@ PlanningServer::PlanningServer(ros::NodeHandle n)
     // Add custom profiles
     profile_dictionary_->addProfile<tesseract_planning::SimplePlannerPlanProfile>(SIMPLE_DEFAULT_NAMESPACE, PROFILE,
       createSimplePlannerProfile());
-    ROS_INFO("Simple profile added!");
+    CONSOLE_BRIDGE_logInform("Simple profile added!");
 
     // profile_dictionary_->addProfile<tesseract_planning::OMPLPlanProfile>(OMPL_DEFAULT_NAMESPACE, PROFILE, 
     //   createOMPLProfile());
-    // ROS_INFO("OMPL profile added!");
+    // CONSOLE_BRIDGE_logInform("OMPL profile added!");
 
     profile_dictionary_->addProfile<tesseract_planning::TrajOptCompositeProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, 
       createTrajOptCompositeProfile());
-    ROS_INFO("TrajOpt composite profile added!");
+    CONSOLE_BRIDGE_logInform("TrajOpt composite profile added!");
 
     profile_dictionary_->addProfile<tesseract_planning::TrajOptPlanProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, createTrajOptPlanProfile());
-    ROS_INFO("TrajOpt plan profile added!");
+    CONSOLE_BRIDGE_logInform("TrajOpt plan profile added!");
 
     // profile_dictionary_->addProfile<tesseract_planning::TrajOptPlanProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, createTrajOptToolZFreePlanProfile());
-    // ROS_INFO("TrajOpt plan profile (z axis rotation-free) added!");
+    // CONSOLE_BRIDGE_logInform("TrajOpt plan profile (z axis rotation-free) added!");
 
     profile_dictionary_->addProfile<tesseract_planning::DescartesPlanProfile<float>>(
       DESCARTES_DEFAULT_NAMESPACE, PROFILE, 
       createDescartesPlanProfile<float>());
-    ROS_INFO("Descartes profile added!");
+    CONSOLE_BRIDGE_logInform("Descartes profile added!");
 
     // profile_dictionary_->addProfile<tesseract_planning::MinLengthProfile>(
     //   MIN_LENGTH_DEFAULT_NAMESPACE, PROFILE,
     //   std::make_shared<tesseract_planning::MinLengthProfile>(5));
-    // ROS_INFO("Min length profile added!");
+    // CONSOLE_BRIDGE_logInform("Min length profile added!");
 
     // profile_dictionary_->addProfile<tesseract_planning::IterativeSplineParameterizationProfile>(
     //   ISP_DEFAULT_NAMESPACE, PROFILE,
     //   std::make_shared<tesseract_planning::IterativeSplineParameterizationProfile>());
-    // ROS_INFO("ISP profile added!");
+    // CONSOLE_BRIDGE_logInform("ISP profile added!");
 
-    ROS_INFO("Plan profile created");
+    CONSOLE_BRIDGE_logInform("Plan profile created");
   }
-}
 
-
-bool PlanningServer::plan(
-    kortex_motion_planning::GenerateKortexMotionPlan::Request &req,
-    kortex_motion_planning::GenerateKortexMotionPlan::Response &res)
-{
-  try
-  {
-    ROS_INFO("Received kortex motion planning request!");
+  // note: the following part is from original function plan
+  // try
+  // {
+    CONSOLE_BRIDGE_logInform("Received kortex motion planning request!");
 
     // TODO: load robot model
     // Create manipulator info
     tesseract_common::ManipulatorInfo manipulator_info(MANIPULATOR_GROUP_NAME, WORKING_FRAME_NAME, TCP_FRAME_NAME);
-    ROS_INFO("Manipulator info created!");
+    CONSOLE_BRIDGE_logInform("Manipulator info created!");
 
     // Initialize start configuration with current joint positions
+    // todo: ros free
     joint_names_ = env_->getJointGroup(manipulator_info.manipulator)->getJointNames();
-    ROS_INFO("Joint names got!");
-    auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
+    CONSOLE_BRIDGE_logInform("Joint names got!");
+    // auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
     Eigen::VectorXd start_configuration(DOF);
     for (int i = 0; i < DOF; i++)
     {
-      double joint_position = stateFeedback->actuators[i].position/(180.0/M_PI);
+      // double joint_position = stateFeedback->actuators[i].position/(180.0/M_PI);
+      double joint_position = current_joint_position(i); // rad
       // std::cout << "The joint position is: " << joint_position << std::endl;
       if ((i == 1 && abs(joint_position) >= 2.41) || 
           (i == 3 && abs(joint_position) >= 2.66) ||
@@ -235,18 +236,7 @@ bool PlanningServer::plan(
     }
 
     // Initialize target configuration
-    Eigen::Translation3d target_translation;
-    target_translation.x() = req.target_pose.position.x;
-    target_translation.y() = req.target_pose.position.y;
-    target_translation.z() = req.target_pose.position.z;
-    Eigen::Quaterniond target_quaternion;
-
-    target_quaternion.x() = req.target_pose.orientation.x;
-    target_quaternion.y() = req.target_pose.orientation.y;
-    target_quaternion.z() = req.target_pose.orientation.z;
-    target_quaternion.w() = req.target_pose.orientation.w;
-
-    Eigen::Isometry3d target_configuration;  // cartesian
+    Eigen::Isometry3d target_configuration;  // target in cartesian
 
     target_configuration = Eigen::Isometry3d::Identity() * target_translation * target_quaternion;
 
@@ -257,14 +247,18 @@ bool PlanningServer::plan(
     tesseract_planning::CompositeInstruction program = createProgram(manipulator_info, target_configuration);
 
     // Set up task composer problem
+    // todo: ros free
     std::string config_path = ros::package::getPath(TASK_COMPOSER_PLUGIN_PKG_NAME);
+    // std::string config_path;
+    // config_path = "/home/zing/mealAssistiveRobot/sla_ws/src/kortex_motion_planning";
+    std::cout << "config path" << config_path << std::endl;
     if (config_path.empty())
     {
-      ROS_ERROR("Failed to get path of config file, please check!");
+      CONSOLE_BRIDGE_logError("Failed to get path of config file, please check!");
     }
     config_path += TASK_COMPOSER_PLUGIN_SUB_PATH;
     tesseract_planning::TaskComposerPluginFactory factory(YAML::LoadFile(config_path));
-    ROS_INFO("Task composer plugin factory created!");
+    CONSOLE_BRIDGE_logInform("Task composer plugin factory created!");
 
     // Create executor      
     auto executor = factory.createTaskComposerExecutor("TaskflowExecutor");
@@ -275,13 +269,13 @@ bool PlanningServer::plan(
     tesseract_planning::TaskComposerNode::UPtr task = factory.createTaskComposerNode(TASK_PIPELINE);
     const std::string input_key = task->getInputKeys().front();
     const std::string output_key = task->getOutputKeys().front();
-    ROS_INFO("Task composer node created!");
+    CONSOLE_BRIDGE_logInform("Task composer node created!");
 
     // Save dot graph
     std::ofstream task_composer_data;
     task_composer_data.open(tesseract_common::getTempPath() + TASK_PIPELINE + ".dot");  // /temp
     task->dump(task_composer_data);
-    ROS_INFO("Dot graph saved!");
+    CONSOLE_BRIDGE_logInform("Dot graph saved!");
 
     // Create task input data
     tesseract_planning::TaskComposerDataStorage input_data;
@@ -293,30 +287,36 @@ bool PlanningServer::plan(
     // Update log level for debugging
     auto log_level = console_bridge::getLogLevel();
     std::cout << "Log level: " << log_level << std::endl;
-    if (verbose_)
+    // todo: check the logical value is needed
+    if (false)
     {
       console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
       // Create dump dotgraphs of each task for reference
       std::ofstream cartesian_pipeline_output_data;
-      cartesian_pipeline_output_data.open(tesseract_common::getTempPath() + "Gen3CartesianPipeline.dot");
-      factory.createTaskComposerNode("Gen3CartesianPipeline")->dump(cartesian_pipeline_output_data);
+      cartesian_pipeline_output_data.open(tesseract_common::getTempPath() + "Gen3Pipeline.dot");
+      factory.createTaskComposerNode("Gen3Pipeline")->dump(cartesian_pipeline_output_data);
 
-      std::ofstream freespace_pipeline_output_data;
-      freespace_pipeline_output_data.open(tesseract_common::getTempPath() + "Gen3FreespacePipeline.dot");
-      factory.createTaskComposerNode("Gen3FreespacePipeline")->dump(freespace_pipeline_output_data);
-      // TODO: check if other pipeline output data is needed
+      // std::ofstream cartesian_pipeline_output_data;
+      // cartesian_pipeline_output_data.open(tesseract_common::getTempPath() + "Gen3CartesianPipeline.dot");
+      // factory.createTaskComposerNode("Gen3CartesianPipeline")->dump(cartesian_pipeline_output_data);
+
+      // std::ofstream freespace_pipeline_output_data;
+      // freespace_pipeline_output_data.open(tesseract_common::getTempPath() + "Gen3FreespacePipeline.dot");
+      // factory.createTaskComposerNode("Gen3FreespacePipeline")->dump(freespace_pipeline_output_data);
+      // // TODO: check if other pipeline output data is needed
     }
 
+    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
     // Solve process plan
-    ROS_INFO("Begin to solve the program!");
+    CONSOLE_BRIDGE_logInform("Begin to solve the program!");
     tesseract_common::Timer stopwatch;  // get solving time
     stopwatch.start();
     tesseract_planning::TaskComposerInput input(problem, profile_dictionary_);  // passed as an input to each process in the decision tree
     tesseract_planning::TaskComposerFuture::UPtr executor_future = executor->run(*task, input);
     executor_future->wait();
     stopwatch.stop();
-    ROS_INFO("Planning time: %f seconds", stopwatch.elapsedSeconds());
+    CONSOLE_BRIDGE_logInform("Planning time: %f seconds", stopwatch.elapsedSeconds());
 
     // Reset the log level
     console_bridge::setLogLevel(log_level);
@@ -328,16 +328,16 @@ bool PlanningServer::plan(
     // Check for successful plan
     if (!input.isSuccessful())
     {
-      ROS_ERROR("Failed to create motion plan!");
+      CONSOLE_BRIDGE_logError("Failed to create motion plan!");
     }
     else
     {
-      ROS_INFO("Succeeded to create motion plan!");
+      CONSOLE_BRIDGE_logInform("Succeeded to create motion plan!");
     }
 
     // // Display waypoints
     // // TODO: to use CatesianWaypoint.print()
-    // ROS_INFO("Waypoint number: %d", toolpath.data()->size());
+    // CONSOLE_BRIDGE_logInform("Waypoint number: %d", toolpath.data()->size());
     // for (int n_tp = 0; n_tp < toolpath.size(); n_tp++)
     // {
     //   for (int i = 0; i < toolpath[n_tp].size(); i++)
@@ -374,31 +374,24 @@ bool PlanningServer::plan(
     }
 
     // Return result
-    res.motion_plan = tesseract_rosutils::toMsg(tcp_velocity_scaled_joint_trajectory, env_->getState());
-    res.message = "Motion planning succeeded!";
-    res.success = true;
-    }
-    catch (const std::exception& ex)
-    {
-      res.message = ex.what();
-      res.success = false;
-      return false;
-    }
-    return res.success;
+    
+    motion_plan_ = tesseract_rosutils::toMsg(tcp_velocity_scaled_joint_trajectory, env_->getState());
+    // res.message = "Motion planning succeeded!";
+    // res.success = true;
+    // }
+    // catch (const std::exception& ex)
+    // {
+    //   // todo: deal with failed plan
+    //   // res.message = ex.what();
+    //   // res.success = false;
+    //   // return false;
+    // }
+    std::cout << motion_plan_.points[1].time_from_start << std::endl;
+    return motion_plan_;
+
 }
 
-// Define other private member functions here
-void PlanningServer::getCurrentPosition()
-{
-  current_joint_position_ = Eigen::VectorXd(DOF);
-  auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
-  for (int i = 0; i < DOF; i++)
-  {
-    current_joint_position_(i) = stateFeedback->actuators[i].position / (180 / M_PI);
-  }
-}
-
-tesseract_common::JointTrajectory PlanningServer::tcpSpeedLimiter(
+tesseract_common::JointTrajectory Gen3MotionPlanner::tcpSpeedLimiter(
     const tesseract_common::JointTrajectory &input_trajectory,
     const double max_speed,
     const std::string tcp)
@@ -467,7 +460,7 @@ tesseract_common::JointTrajectory PlanningServer::tcpSpeedLimiter(
 }
 
 
-tesseract_planning::CompositeInstruction PlanningServer::createProgram(
+tesseract_planning::CompositeInstruction Gen3MotionPlanner::createProgram(
     const tesseract_common::ManipulatorInfo &info,
     const Eigen::Isometry3d &end_pose)
 {
@@ -500,4 +493,6 @@ tesseract_planning::CompositeInstruction PlanningServer::createProgram(
   return program;
 }
 
-#endif // PLANNING_SERVER_H
+
+
+#endif // GEN3_MOTION_PLANNER_H

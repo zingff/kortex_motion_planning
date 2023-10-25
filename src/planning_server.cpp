@@ -281,6 +281,7 @@ class PlanningServer
       std::cout << "Log level: " << log_level << std::endl;
       if (verbose_)
       {
+        // verbose_ = False currently
         console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
         // Create dump dotgraphs of each task for reference
@@ -531,3 +532,28 @@ int main(int argc, char** argv)
   ros::spin();
   return 0;
 }
+
+
+// TODO: modify to the following: 
+// #include <kortex_motion_planning/planning_server.h> 
+// #include <kortex_motion_planning/gen3_motion_planner.h> 
+// #include <ros/ros.h>
+// #include <ros/package.h>
+// int main(int argc, char** argv)
+// {
+//     ROS_INFO("Initializing planning server!");
+//     // TODO: to use const string
+//     ros::init(argc, argv, "gen3_motion_planning_node");
+//     ros::NodeHandle n;
+
+//     // PlanningServer gen3_motion_planner(n);
+//     // ros::ServiceServer gen3_motion_planning_server = n.advertiseService(PLANNING_SERVICE, &PlanningServer::plan, &gen3_motion_planner);
+
+//     Gen3MotionPlanner gen3_motion_planner;
+//     // gen3_motion_planner.createGen3MotionPlan()
+
+//     ROS_INFO("Ready to provide trajectory for Kinova Gen3!");
+
+//     ros::spin();
+//     return 0;
+// }

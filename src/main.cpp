@@ -48,24 +48,24 @@ class KortexMotionWidget
     //           << target_quaternion.z() << ", "
     //           << target_quaternion.w() << std::endl;
 
-    // // feeding
-    // target_pose_.position.x = -0.15135;
-    // target_pose_.position.y = 0.235484;
-    // target_pose_.position.z = 0.557796;
-    // target_pose_.orientation.x = 0.3872724;
-    // target_pose_.orientation.y = -0.4914169;
-    // target_pose_.orientation.z = -0.604657;
-    // target_pose_.orientation.w = 0.4928685;
+    // feeding
+    target_pose_.position.x = -0.15135;
+    target_pose_.position.y = 0.235484;
+    target_pose_.position.z = 0.557796;
+    target_pose_.orientation.x = 0.3872724;
+    target_pose_.orientation.y = -0.4914169;
+    target_pose_.orientation.z = -0.604657;
+    target_pose_.orientation.w = 0.4928685;
 
 
-    // demo for welding
-    target_pose_.position.x = 0.563152;
-    target_pose_.position.y = -0.157454 + 0.25;
-    target_pose_.position.z = 0.160644;
-    target_pose_.orientation.x = 0.596603;
-    target_pose_.orientation.y = 0.627089;
-    target_pose_.orientation.z = 0.352663;
-    target_pose_.orientation.w = 0.355602;
+    // // demo for welding
+    // target_pose_.position.x = 0.563152;
+    // target_pose_.position.y = -0.157454 + 0.25;
+    // target_pose_.position.z = 0.160644;
+    // target_pose_.orientation.x = 0.596603;
+    // target_pose_.orientation.y = 0.627089;
+    // target_pose_.orientation.z = 0.352663;
+    // target_pose_.orientation.w = 0.355602;
 
     // // pre-feeding
     // target_pose_.position.x = 0.31029;
