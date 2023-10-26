@@ -2,11 +2,7 @@
 #define GEN3_MOTION_PLANNER_H
 
 #include <kortex_motion_planning/planner_profiles.hpp>
-// #include <kortex_motion_planning/planning_server.h>
 #include <console_bridge/console.h>
-// todo: to delete
-#include <ros/package.h>
-
 #include <tesseract_common/timer.h>
 #include <tesseract_time_parameterization/isp/iterative_spline_parameterization.h>
 #include <tesseract_monitoring/environment_monitor.h>
@@ -51,7 +47,7 @@ static const std::string MANIPULATOR_GROUP_NAME = "manipulator";
 static const std::string WORKING_FRAME_NAME = "base_link";
 static const std::string TCP_FRAME_NAME = "tool_frame";
 static const std::string TASK_COMPOSER_PLUGIN_PKG_NAME = "kortex_motion_planning";
-static const std::string TASK_COMPOSER_PLUGIN_SUB_PATH = "/config/tesseract/task_composer_plugins.yaml";
+static const std::string TASK_COMPOSER_PLUGIN_SUB_PATH = "/tesseract/task_composer_plugins.yaml";
 static const std::string URDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.urdf";
 static const std::string SRDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf";
 
@@ -70,7 +66,6 @@ public:
 private:
   tesseract_common::JointTrajectory joint_trajectory_;
 
-  // std::string urdf_xml_string_, srdf_xml_string_;
   urdf::ModelInterfaceSharedPtr urdf_model_;
   srdf::ModelSharedPtr srdf_model_;
   moveit::core::RobotModelPtr robot_model_;
@@ -157,7 +152,7 @@ trajectory_msgs::JointTrajectory Gen3MotionPlanner::createGen3MotionPlan(
     plotter_ = std::make_shared<tesseract_rosutils::ROSPlotting>(env_->getSceneGraph()->getRoot());  // equivalent
     CONSOLE_BRIDGE_logInform("Monitor created!");
 
-    // TODO: here to define the original exampel class
+    // TODO: here to define the original example class
     profile_dictionary_ = std::make_shared<tesseract_planning::ProfileDictionary>();
 
     // Add custom profiles
@@ -247,11 +242,8 @@ trajectory_msgs::JointTrajectory Gen3MotionPlanner::createGen3MotionPlan(
     tesseract_planning::CompositeInstruction program = createProgram(manipulator_info, target_configuration);
 
     // Set up task composer problem
-    // todo: ros free
-    std::string config_path = ros::package::getPath(TASK_COMPOSER_PLUGIN_PKG_NAME);
-    // std::string config_path;
-    // config_path = "/home/zing/mealAssistiveRobot/sla_ws/src/kortex_motion_planning";
-    std::cout << "config path" << config_path << std::endl;
+    std::string config_path = KORTEX_CONFIG_DIR;
+
     if (config_path.empty())
     {
       CONSOLE_BRIDGE_logError("Failed to get path of config file, please check!");
@@ -287,9 +279,10 @@ trajectory_msgs::JointTrajectory Gen3MotionPlanner::createGen3MotionPlan(
     // Update log level for debugging
     auto log_level = console_bridge::getLogLevel();
     std::cout << "Log level: " << log_level << std::endl;
-    // todo: check the logical value is needed
+    // todo: check if the logical value is needed
     if (false)
     {
+      // not currently used 
       console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
       // Create dump dotgraphs of each task for reference
@@ -319,7 +312,7 @@ trajectory_msgs::JointTrajectory Gen3MotionPlanner::createGen3MotionPlan(
     CONSOLE_BRIDGE_logInform("Planning time: %f seconds", stopwatch.elapsedSeconds());
 
     // Reset the log level
-    console_bridge::setLogLevel(log_level);
+    // console_bridge::setLogLevel(log_level);
 
     // Get motion planning result
     tesseract_planning::CompositeInstruction program_result = input.data_storage.getData(output_key).as<tesseract_planning::CompositeInstruction>();
@@ -374,7 +367,6 @@ trajectory_msgs::JointTrajectory Gen3MotionPlanner::createGen3MotionPlan(
     }
 
     // Return result
-    
     motion_plan_ = tesseract_rosutils::toMsg(tcp_velocity_scaled_joint_trajectory, env_->getState());
     // res.message = "Motion planning succeeded!";
     // res.success = true;
@@ -492,7 +484,5 @@ tesseract_planning::CompositeInstruction Gen3MotionPlanner::createProgram(
   // tesseract_planning::CompositeInstruction composite;
   return program;
 }
-
-
 
 #endif // GEN3_MOTION_PLANNER_H

@@ -1,4 +1,4 @@
-// #pragma once
+
 
 #include <descartes_light/edge_evaluators/compound_edge_evaluator.h>
 #include <descartes_light/edge_evaluators/euclidean_distance_edge_evaluator.h>

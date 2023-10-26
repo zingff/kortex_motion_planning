@@ -30,12 +30,12 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
 
     // Path to urdf model, you can also pass the model path by the second param argv[1]
-    const std::string urdtau_measuredilename = (argc<=1) ? KORTEX_CONFIG_DIR + std::string("/robot/gen3_robotiq_2f_85.urdf") : argv[1];
+    const std::string urdf_filename = (argc<=1) ? KORTEX_CONFIG_DIR + std::string("/robot/gen3_robotiq_2f_85.urdf") : argv[1];
     const std::string data_dir = KORTEX_CONFIG_DIR + std::string("/data/");
 
     // Load the URDF model
     pinocchio::Model model;
-    pinocchio::urdf::buildModel(urdtau_measuredilename, model);
+    pinocchio::urdf::buildModel(urdf_filename, model);
 
     // Build data related to model
     pinocchio::Data data(model);
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     // Initialize dynamic variables
     Eigen::VectorXd q_measured = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd v_measured = Eigen::VectorXd::Zero(DOF);
-    Eigen::VectorXd a_measured = Eigen::VectorXd::Zero(DOF); // not available
+    Eigen::VectorXd a_measured = Eigen::VectorXd::Zero(DOF); // not available yet
     Eigen::VectorXd tau_measured = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd tau_estimated = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd delta_tau = Eigen::VectorXd::Zero(DOF);
@@ -73,6 +73,8 @@ int main(int argc, char** argv)
         v_measured(i) = feedback->actuators[i].velocity;
         // a_measured(i) = feedback->actuators[i].
         tau_measured(i) = - feedback->actuators[i].torque;
+        std::cout << i << ": " << feedback->actuators[i].current_motor << "; " <<
+        feedback->actuators[i].torque << "; " << feedback->actuators[i].torque/feedback->actuators[i].current_motor << std::endl;
 
       }
       q_measured = degreesToRadians(q_measured);

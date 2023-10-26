@@ -6,6 +6,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 SET(KORTEX_CONFIG_DIR "${PROJECT_SOURCE_DIR}/config")
+add_definitions(-DKORTEX_CONFIG_DIR="${KORTEX_CONFIG_DIR}")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -68,6 +69,8 @@ catkin_package(
   CATKIN_DEPENDS message_runtime
 )
 catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
   moveit_core
   moveit_ros_planning_interface
@@ -103,6 +106,7 @@ target_include_directories(${PROJECT_NAME}_node SYSTEM PRIVATE
 add_executable(${PROJECT_NAME}_new_node 
   src/planning_server_new.cpp)
   # src/include/kortex_motion_planning/planning_server.h)
+# add_dependencies(${PROJECT_NAME}_new_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   ${PROJECT_NAME}_new_node
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -180,7 +184,7 @@ target_link_libraries(
 )
 
 # qt
-add_executable(joint_torque_realtime_plot src/joint_torque_realtime_plot.cpp)
+add_executable(joint_torque_realtime_plot src/utilities/joint_torque_realtime_plot.cpp)
 target_link_libraries(
   joint_torque_realtime_plot
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -196,8 +200,39 @@ target_include_directories(${PROJECT_NAME}_plugins SYSTEM PUBLIC ${LAPACK_INCLUD
 
 # Install the executable(s)
 install(TARGETS ${PROJECT_NAME}_node DESTINATION lib/${PROJECT_NAME})
-
 # Install the library(ies)
 install(TARGETS ${PROJECT_NAME}_plugins EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
-
 install(DIRECTORY config launch DESTINATION share/${PROJECT_NAME}/)
+
+add_library(${PROJECT_NAME} 
+  src/gen3_motion_planner.cpp
+  include/kortex_motion_planning/planner_profiles.hpp
+  # include/kortex_motion_planning/gen3_motion_planner.h
+  # include/kortex_motion_planning/gen3_motion_executor.h
+  )
+# target_include_directories(${PROJECT_NAME} PUBLIC
+#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#   $<INSTALL_INTERFACE:include>
+# )
+target_link_libraries(${PROJECT_NAME} 
+  ${catkin_LIBRARIES}
+  tesseract::tesseract_environment
+  tesseract::tesseract_command_language
+  tesseract::tesseract_task_composer
+  tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_motion_planners_simple
+  tesseract::tesseract_motion_planners_ompl
+  tesseract::tesseract_motion_planners_trajopt
+  tesseract::tesseract_motion_planners_descartes
+  tesseract::tesseract_time_parameterization_isp
+  )
+install(
+  TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
