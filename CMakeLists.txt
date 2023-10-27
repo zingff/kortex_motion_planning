@@ -5,7 +5,15 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
-SET(KORTEX_CONFIG_DIR "${PROJECT_SOURCE_DIR}/config")
+if(NOT PINOCCHIO_LIB_DIRS)
+  set(PINOCCHIO_LIB_DIRS 
+    "${PROJECT_SOURCE_DIR}/../../devel/lib"
+  )
+endif()
+
+SET(KORTEX_CONFIG_DIR 
+  "${PROJECT_SOURCE_DIR}/config"
+)
 add_definitions(-DKORTEX_CONFIG_DIR="${KORTEX_CONFIG_DIR}")
 
 find_package(catkin REQUIRED COMPONENTS
@@ -17,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning_interface
 
   std_srvs
+
   tesseract_monitoring
   tesseract_rosutils
 
@@ -41,18 +50,16 @@ include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/inclu
 include_directories(include ${PROJECT_SOURCE_DIR}/../ros_kortex/kortex_api/include/common)
 include_directories(${QCustomPlot_INCLUDE_DIRS})
 
-
 include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
-        ${EIGEN3_INCLUDE_DIRS}
-        ${pinocchio_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+  ${pinocchio_INCLUDE_DIRS}
 )
 
 link_directories(
-        ${pinocchio_LIBRARY_DIRS}
+  ${pinocchio_LIBRARY_DIRS}
 )
-
 
 # Generate custom service
 add_service_files(
@@ -77,12 +84,20 @@ catkin_package(
 )
 
 # Gripper command
-add_executable(gripper_command src/utilities/gripper_command.cpp)
-add_dependencies(gripper_command ${catkin_EXPORTED_TARGETS})
-target_link_libraries(gripper_command ${catkin_LIBRARIES} )
+add_executable(gripper_command 
+  src/utilities/gripper_command.cpp
+)
+add_dependencies(gripper_command 
+  ${catkin_EXPORTED_TARGETS}
+)
+target_link_libraries(gripper_command 
+  ${catkin_LIBRARIES}
+)
 
 # Planning server
-add_executable(${PROJECT_NAME}_node src/planning_server.cpp)
+add_executable(${PROJECT_NAME}_node 
+  src/planning_server.cpp
+)
 target_link_libraries(
   ${PROJECT_NAME}_node
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -94,19 +109,20 @@ target_link_libraries(
   tesseract::tesseract_motion_planners_ompl
   tesseract::tesseract_motion_planners_trajopt
   tesseract::tesseract_motion_planners_descartes
-  tesseract::tesseract_time_parameterization_isp)
+  tesseract::tesseract_time_parameterization_isp
+)
 
 target_include_directories(${PROJECT_NAME}_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)  # to use headers from tesseract packages
 target_include_directories(${PROJECT_NAME}_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
+  ${catkin_INCLUDE_DIRS}
+)  # to use headers from tesseract packages
 
 # Planning server new
 add_executable(${PROJECT_NAME}_new_node 
   src/planning_server_new.cpp)
-  # src/include/kortex_motion_planning/planning_server.h)
-# add_dependencies(${PROJECT_NAME}_new_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(
   ${PROJECT_NAME}_new_node
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -118,13 +134,16 @@ target_link_libraries(
   tesseract::tesseract_motion_planners_ompl
   tesseract::tesseract_motion_planners_trajopt
   tesseract::tesseract_motion_planners_descartes
-  tesseract::tesseract_time_parameterization_isp)
+  tesseract::tesseract_time_parameterization_isp
+)
 
 target_include_directories(${PROJECT_NAME}_new_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)  # to use headers from tesseract packages
 target_include_directories(${PROJECT_NAME}_new_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
+  ${catkin_INCLUDE_DIRS}
+)  # to use headers from tesseract packages
 
 # Motion executor
 add_executable(kortex_motion_execution_node src/motion_execution.cpp)
@@ -142,13 +161,17 @@ target_link_libraries(
   tesseract::tesseract_time_parameterization_isp)
 
 target_include_directories(kortex_motion_execution_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)  # to use headers from tesseract packages
 target_include_directories(kortex_motion_execution_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
+  ${catkin_INCLUDE_DIRS}
+)  # to use headers from tesseract packages
 
 # Motion widget
-add_executable(kortex_motion_widget_node src/main.cpp)
+add_executable(kortex_motion_widget_node 
+  src/main.cpp
+)
 target_link_libraries(
   kortex_motion_widget_node
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -160,13 +183,16 @@ target_link_libraries(
   tesseract::tesseract_motion_planners_ompl
   tesseract::tesseract_motion_planners_trajopt
   tesseract::tesseract_motion_planners_descartes
-  tesseract::tesseract_time_parameterization_isp)
+  tesseract::tesseract_time_parameterization_isp
+)
 
 target_include_directories(kortex_motion_widget_node PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")  # to use headers from tesseract packages
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)  # to use headers from tesseract packages
 target_include_directories(kortex_motion_widget_node SYSTEM PRIVATE
-    ${catkin_INCLUDE_DIRS})  # to use headers from tesseract packages
+  ${catkin_INCLUDE_DIRS}
+)  # to use headers from tesseract packages
 
 message("Pinocchio include dirs: ${pinocchio_INCLUDE_DIRS}")
 # /home/zing/mealAssistiveRobot/sla_ws/devel/include
@@ -175,8 +201,10 @@ message("Pinocchio library dirs: ${pinocchio_LIBRARY_DIRS}")
     
 
 # collision detection
-link_directories(/home/zing/mealAssistiveRobot/sla_ws/devel/lib) # path to libpinocchio
-add_executable(collision_detection src/collision_detection.cpp)
+link_directories(${PINOCCHIO_LIB_DIRS}) # libpinocchio
+add_executable(collision_detection 
+  src/collision_detection.cpp
+)
 target_link_libraries(
   collision_detection
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -184,7 +212,9 @@ target_link_libraries(
 )
 
 # qt
-add_executable(joint_torque_realtime_plot src/utilities/joint_torque_realtime_plot.cpp)
+add_executable(joint_torque_realtime_plot 
+  src/utilities/joint_torque_realtime_plot.cpp
+)
 target_link_libraries(
   joint_torque_realtime_plot
   ${catkin_LIBRARIES}  # add this line to use ros properly
@@ -193,27 +223,31 @@ target_link_libraries(
 )
 
 # Plugin Library
-add_library(${PROJECT_NAME}_plugins SHARED src/motoman_hc10_ikfast_plugin.cpp)
-target_link_libraries(${PROJECT_NAME}_plugins PUBLIC ${LAPACK_LIBRARIES} tesseract::tesseract_common
-                                                     tesseract::tesseract_kinematics_ikfast)
-target_include_directories(${PROJECT_NAME}_plugins SYSTEM PUBLIC ${LAPACK_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+add_library(${PROJECT_NAME}_plugins SHARED 
+  src/motoman_hc10_ikfast_plugin.cpp
+)
+target_link_libraries(${PROJECT_NAME}_plugins PUBLIC 
+  ${LAPACK_LIBRARIES} 
+  tesseract::tesseract_common
+  tesseract::tesseract_kinematics_ikfast
+)
+target_include_directories(${PROJECT_NAME}_plugins SYSTEM PUBLIC 
+  ${LAPACK_INCLUDE_DIRS} 
+  ${EIGEN3_INCLUDE_DIRS}
+)
 
 # Install the executable(s)
-install(TARGETS ${PROJECT_NAME}_node DESTINATION lib/${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME}_node 
+  DESTINATION lib/${PROJECT_NAME})
 # Install the library(ies)
-install(TARGETS ${PROJECT_NAME}_plugins EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+install(TARGETS ${PROJECT_NAME}_plugins EXPORT 
+  ${PROJECT_NAME}-targets DESTINATION lib)
 install(DIRECTORY config launch DESTINATION share/${PROJECT_NAME}/)
 
 add_library(${PROJECT_NAME} 
   src/gen3_motion_planner.cpp
   include/kortex_motion_planning/planner_profiles.hpp
-  # include/kortex_motion_planning/gen3_motion_planner.h
-  # include/kortex_motion_planning/gen3_motion_executor.h
-  )
-# target_include_directories(${PROJECT_NAME} PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#   $<INSTALL_INTERFACE:include>
-# )
+)
 target_link_libraries(${PROJECT_NAME} 
   ${catkin_LIBRARIES}
   tesseract::tesseract_environment
@@ -225,7 +259,7 @@ target_link_libraries(${PROJECT_NAME}
   tesseract::tesseract_motion_planners_trajopt
   tesseract::tesseract_motion_planners_descartes
   tesseract::tesseract_time_parameterization_isp
-  )
+)
 install(
   TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
