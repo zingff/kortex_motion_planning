@@ -38,10 +38,12 @@ static const std::string PROFILE2 = "GEN3_FREESPACE";
 static const std::string PLANNING_SERVICE = "/my_gen3/motion_planning_server";
 static const std::string MONITOR_NAMESPACE = "gen3_environment";
 static const std::string TASK_PIPELINE = "Gen3Pipeline";
-static const std::string STATE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
+// static const std::string STATE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
+static const std::string STATE_FEEDBACK_TOPIC = "/base_feedback";
+
 static const double MAX_TCP_SPEED = 0.2;
-const std::string ROBOT_DESCRIPTION_PARAM = "robot_description";
-const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic";
+const std::string ROBOT_DESCRIPTION_PARAM = "trajopt_description";
+const std::string ROBOT_SEMANTIC_PARAM = "trajopt_description_semantic";
 static const int DOF = 7;
 static const std::string MANIPULATOR_GROUP_NAME = "manipulator";
 static const std::string WORKING_FRAME_NAME = "base_link";

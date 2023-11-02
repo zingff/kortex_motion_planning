@@ -2,7 +2,7 @@
 #include <kortex_driver/SendGripperCommand.h>
 #include <kortex_driver/GripperMode.h>
 
-static const std::string GRIPPER_COMMAND_SERVICE_NAME = "/my_gen3/base/send_gripper_command";
+static const std::string GRIPPER_COMMAND_SERVICE_NAME = "/base/send_gripper_command";
 
 bool gripperCommand(ros::NodeHandle n, double value)
 {

@@ -49,7 +49,7 @@ class Gen3MotionExecutor
   {
     try
     {
-      actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> motion_execution_client_("my_gen3/gen3_joint_trajectory_controller/follow_joint_trajectory", false);    
+      actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> motion_execution_client_("gen3_joint_trajectory_controller/follow_joint_trajectory", false);    
       // Check whether motion execution client is connected
       motion_execution_client_.waitForServer(ros::Duration(1.0));
       if(!motion_execution_client_.isServerConnected())
