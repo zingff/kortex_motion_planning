@@ -49,10 +49,10 @@ static const std::string FREESPACE_PLANNER = "FREESPACE";
 static const std::string RASTER_PLANNER = "RASTER";
 static const std::string PROFILE = "GEN3";
 static const std::string PROFILE2 = "GEN3_FREESPACE";
-static const std::string PLANNING_SERVICE = "/my_gen3/motion_planning_server";
+static const std::string PLANNING_SERVICE = "/motion_planning_server";
 static const std::string MONITOR_NAMESPACE = "gen3_environment";
 static const std::string TASK_PIPELINE = "Gen3Pipeline";
-static const std::string STATE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
+static const std::string STATE_FEEDBACK_TOPIC = "/base_feedback";
 
 static const double MAX_TCP_SPEED = 0.2; // m/s
 
@@ -129,7 +129,7 @@ class PlanningServer
     monitor_ = std::make_shared<tesseract_monitoring::ROSEnvironmentMonitor>(env_, MONITOR_NAMESPACE);
     monitor_->setEnvironmentPublishingFrequency(40);
     monitor_->startPublishingEnvironment();
-    monitor_->startStateMonitor("/my_gen3/joint_states", true);
+    monitor_->startStateMonitor("/joint_states", true);
 
     // Create plotter
     if(plotting_)

@@ -6,7 +6,7 @@
 #include <kortex_driver/StopAction.h>
 
 static const int DOF = 7;
-static const std::string BASE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
+static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
 QCustomPlot* customPlot;
 
 void updatePlot(const Eigen::VectorXd& tau_measured, qint64 startingTime) {

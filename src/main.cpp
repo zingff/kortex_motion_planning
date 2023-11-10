@@ -7,10 +7,10 @@
 #include <Eigen/Geometry>
 #include <tf2/LinearMath/Quaternion.h>
 
-static const std::string PLANNING_SERVICE = "/my_gen3/motion_planning_server";
-static const std::string MOTION_EXECUTION_SERVICE = "/my_gen3/motion_execution_server";
+static const std::string PLANNING_SERVICE = "/motion_planning_server";
+static const std::string MOTION_EXECUTION_SERVICE = "/motion_execution_server";
 static const int DOF = 7;
-static const std::string STATE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
+static const std::string STATE_FEEDBACK_TOPIC = "/base_feedback";
 
 class KortexMotionWidget
 {

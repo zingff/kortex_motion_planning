@@ -5,10 +5,9 @@
 #include <kortex_motion_planning/ExecuteMotionPlan.h>
 #include <kortex_driver/BaseCyclic_Feedback.h>
 
-static const std::string MOTION_EXECUTION_SERVICE = "/my_gen3/motion_execution_server";
-static const std::string MOTION_EXECUTION_CLIENT = "/my_gen3/gen3_joint_trajectory_controller/follow_joint_trajectory";
-static const std::string MOTION_EXECUTION_SERVER = "/my_gen3/motion_exection_server";
-static const std::string STATE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
+static const std::string MOTION_EXECUTION_SERVICE = "/motion_execution_server";
+static const std::string MOTION_EXECUTION_CLIENT = "/gen3_joint_trajectory_controller/follow_joint_trajectory";
+static const std::string STATE_FEEDBACK_TOPIC = "/base_feedback";
 static const int DOF = 7;
 static const double JOINT_DISTANCE_THRESHOLD = 0.01;
 static const double EXECUTION_TIME_THRESHOLD = 15.0;
@@ -34,7 +33,7 @@ class MotionExecutionServer
   {
     try
     {
-      actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> motion_execution_client_("my_gen3/gen3_joint_trajectory_controller/follow_joint_trajectory", false);    
+      actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> motion_execution_client_("/gen3_joint_trajectory_controller/follow_joint_trajectory", false);    
       // Check whether motion execution client is connected
       motion_execution_client_.waitForServer(ros::Duration(1.0));
       if(!motion_execution_client_.isServerConnected())
