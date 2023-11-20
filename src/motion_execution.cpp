@@ -117,7 +117,28 @@ class MotionExecutionServer
       // TODO: merge into sendGoalAndWait()
       // TODO: modify into switch case form to consider all outcomes
       motion_execution_client_.sendGoal(goal_msg);
-      motion_execution_client_.waitForResult(ros::Duration(goal_msg.trajectory.points.back().time_from_start.sec) * 0.5);
+      motion_execution_client_.waitForResult(ros::Duration(goal_msg.trajectory.points.back().time_from_start.sec) * 1.0);
+
+      // Check if the robot is static
+      // TODO: add timer
+      // trajectory_msgs::JointTrajectoryPoint joint_state_1, joint_state_2;
+      joint_state_2 = getJointState();
+      ros::Duration(1.0).sleep();
+      joint_state_1 = getJointState();
+      // double joint_distance = 0;
+      for (int i = 0; i < DOF; i++)
+      {
+        double diff = joint_state_1.positions[i] - joint_state_2.positions[i];
+        joint_distance += diff * diff;
+      }
+      joint_distance = std::sqrt(joint_distance);
+      // TODO: check for a certain of time
+      if (joint_distance >= JOINT_DISTANCE_THRESHOLD)
+      {
+        ROS_WARN("Please check if the robot is moving");
+        ROS_WARN("Keep waiting for some seconds.");
+        ros::Duration(5.0).sleep();
+      }
 
       if (motion_execution_client_.getState() != actionlib::SimpleClientGoalState::LOST)
       {
