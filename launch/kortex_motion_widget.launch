@@ -4,11 +4,9 @@
       </node>
 
       <!-- collision detection -->
-      <group>
+      <!-- <group>
         <node name="collision_detection" pkg="kortex_motion_planning" type="collision_detection" ns="my_gen3" output="screen">
         </node>
-        <!-- <node name="qt_plot" pkg="kortex_motion_planning" type="qt_plot" ns="my_gen3" output="screen">
-        </node> -->
-      </group>
+      </group> -->
 
   </launch>

@@ -222,6 +222,19 @@ target_link_libraries(
   ${QCustomPlot_LIBRARIES}
 )
 
+# collision detection visualization
+link_directories(${PINOCCHIO_LIB_DIRS}) # libpinocchio
+add_executable(collision_detection_visualization 
+  src/collision_detection_visualization.cpp
+)
+target_link_libraries(
+  collision_detection_visualization
+  ${catkin_LIBRARIES}  # add this line to use ros properly
+  Qt5::Widgets
+  ${QCustomPlot_LIBRARIES}
+  pinocchio
+)
+
 # Plugin Library
 add_library(${PROJECT_NAME}_plugins SHARED 
   src/motoman_hc10_ikfast_plugin.cpp

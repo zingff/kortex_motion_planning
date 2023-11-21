@@ -1,13 +1,10 @@
 #include "pinocchio/algorithm/rnea.hpp"
 #include <pinocchio/parsers/urdf.hpp>
-
 #include <iostream>
 #include <fstream> 
 #include <string>
-
 #include <ros/ros.h>
 #include <kortex_driver/StopAction.h>
-
 #include <Eigen/Core>
 #include <kortex_driver/BaseCyclic_Feedback.h>
 #include <kortex_driver/StopAction.h>
@@ -18,11 +15,16 @@
 #endif
 
 static const int DOF = 7;
-static const std::string BASE_FEEDBACK_TOPIC = "/my_gen3/base_feedback";
+static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
     return (M_PI / 180.0) * degreesVector;
 }
+
+// TODO: merge this code and joint_torque_realtime_plot 
+// and update the data structure of joint torque/delta torque 
+// with the time stamp used in qt plot (1+7 columns)
+// done
 
 int main(int argc, char** argv)
 {
@@ -48,18 +50,16 @@ int main(int argc, char** argv)
     Eigen::VectorXd tau_estimated = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd delta_tau = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd F_threshold = Eigen::VectorXd::Ones(DOF);
-
     Eigen::VectorXd q = Eigen::VectorXd::Zero(model.nq);
     Eigen::VectorXd v = Eigen::VectorXd::Zero(model.nv);
     Eigen::VectorXd a = Eigen::VectorXd::Zero(model.nv);
-
 
     for (size_t i = 0; i < model.joints.size(); i++)
     {
       std::cout << model.joints[i] << std::endl;
     }
 
-    ros::ServiceClient stop_client = nh.serviceClient<kortex_driver::StopAction>("/my_gen3/base/stop_action");
+    ros::ServiceClient stop_client = nh.serviceClient<kortex_driver::StopAction>("/base/stop_action");
     kortex_driver::StopAction stop_action;
 
     // Force checking loop
@@ -73,40 +73,29 @@ int main(int argc, char** argv)
         v_measured(i) = feedback->actuators[i].velocity;
         // a_measured(i) = feedback->actuators[i].
         tau_measured(i) = - feedback->actuators[i].torque;
-        std::cout << i << ": " << feedback->actuators[i].current_motor << "; " <<
-        feedback->actuators[i].torque << "; " << feedback->actuators[i].torque/feedback->actuators[i].current_motor << std::endl;
-
+        // std::cout << i << ": " << feedback->actuators[i].current_motor << "; " <<
+        // feedback->actuators[i].torque << "; " << feedback->actuators[i].torque/feedback->actuators[i].current_motor << std::endl;
       }
       q_measured = degreesToRadians(q_measured);
       v_measured = degreesToRadians(v_measured);
 
-      // Convert joint position to pinocchio form 
+      // Formulate joint position into Lie algebra form
       q(0) = cos(q_measured(0));
       q(1) = sin(q_measured(0));
-
       q(2) = q_measured(1); 
-
       q(3) = cos(q_measured(2));
       q(4) = sin(q_measured(2));
-
       q(5) = q_measured(3); 
-
       q(6) = cos(q_measured(4));
       q(7) = sin(q_measured(4));
-
       q(8) = q_measured(5);
-      
       q(9) = cos(q_measured(6));
       q(10) = sin(q_measured(6));
-
       for (size_t i = 0; i < DOF; i++)
       {
         v(i) = v_measured(i);
       }
-      
-
       pinocchio::rnea(model, data, q, v, a);
-
       // std::cout << "Joint torque: " << data.tau.head(7).transpose() << std::endl;
       tau_estimated = data.tau.head(DOF);
       delta_tau = (tau_estimated - tau_measured).cwiseAbs();
@@ -141,6 +130,5 @@ int main(int argc, char** argv)
         }
       }
     }
-
     return 0;
 }
