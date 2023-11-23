@@ -23,13 +23,10 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   moveit_core
   moveit_ros_planning_interface
-
   std_srvs
-
   tesseract_monitoring
   tesseract_rosutils
-
-  message_generation # for custom service
+  message_generation
 )
 
 find_package(pinocchio REQUIRED)
@@ -61,14 +58,20 @@ link_directories(
   ${pinocchio_LIBRARY_DIRS}
 )
 
-# Generate custom service
+add_message_files(
+  FILES
+  JointPositions.msg
+)
 add_service_files(
   FILES
-  GenerateKortexMotionPlan.srv  # motion planning
-  ExecuteMotionPlan.srv  # motion execution
+  GenerateKortexMotionPlan.srv
+  ExecuteMotionPlan.srv
+  GenerateKortexJointMotionPlan.srv
 )
 generate_messages(
   DEPENDENCIES
+  std_msgs
+  sensor_msgs
   geometry_msgs
   trajectory_msgs
 )
@@ -100,7 +103,7 @@ add_executable(${PROJECT_NAME}_node
 )
 target_link_libraries(
   ${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}  # add this line to use ros properly
+  ${catkin_LIBRARIES}
   tesseract::tesseract_environment
   tesseract::tesseract_command_language
   tesseract::tesseract_task_composer
@@ -115,10 +118,62 @@ target_link_libraries(
 target_include_directories(${PROJECT_NAME}_node PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>"
-)  # to use headers from tesseract packages
+)
 target_include_directories(${PROJECT_NAME}_node SYSTEM PRIVATE
   ${catkin_INCLUDE_DIRS}
-)  # to use headers from tesseract packages
+)
+
+# Joint space planning server
+add_executable(kortex_joint_motion_planning_node 
+  src/joint_space_planning_server.cpp
+)
+target_link_libraries(
+  kortex_joint_motion_planning_node
+  ${catkin_LIBRARIES}
+  tesseract::tesseract_environment
+  tesseract::tesseract_command_language
+  tesseract::tesseract_task_composer
+  tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_motion_planners_simple
+  tesseract::tesseract_motion_planners_ompl
+  tesseract::tesseract_motion_planners_trajopt
+  tesseract::tesseract_motion_planners_descartes
+  tesseract::tesseract_time_parameterization_isp
+)
+
+target_include_directories(kortex_joint_motion_planning_node PRIVATE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)
+target_include_directories(kortex_joint_motion_planning_node SYSTEM PRIVATE
+  ${catkin_INCLUDE_DIRS}
+)
+
+# Motion widget for joint widget
+add_executable(kortex_joint_motion_widget_node 
+  src/joint_main.cpp
+)
+target_link_libraries(
+  kortex_joint_motion_widget_node
+  ${catkin_LIBRARIES}
+  tesseract::tesseract_environment
+  tesseract::tesseract_command_language
+  tesseract::tesseract_task_composer
+  tesseract::tesseract_motion_planners_core
+  tesseract::tesseract_motion_planners_simple
+  tesseract::tesseract_motion_planners_ompl
+  tesseract::tesseract_motion_planners_trajopt
+  tesseract::tesseract_motion_planners_descartes
+  tesseract::tesseract_time_parameterization_isp
+)
+target_include_directories(kortex_joint_motion_widget_node PRIVATE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)
+target_include_directories(kortex_joint_motion_widget_node SYSTEM PRIVATE
+  ${catkin_INCLUDE_DIRS}
+)
+
 
 # Planning server new
 add_executable(${PROJECT_NAME}_new_node 
@@ -174,7 +229,7 @@ add_executable(kortex_motion_widget_node
 )
 target_link_libraries(
   kortex_motion_widget_node
-  ${catkin_LIBRARIES}  # add this line to use ros properly
+  ${catkin_LIBRARIES}
   tesseract::tesseract_environment
   tesseract::tesseract_command_language
   tesseract::tesseract_task_composer
@@ -185,14 +240,15 @@ target_link_libraries(
   tesseract::tesseract_motion_planners_descartes
   tesseract::tesseract_time_parameterization_isp
 )
-
 target_include_directories(kortex_motion_widget_node PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>"
-)  # to use headers from tesseract packages
+)
 target_include_directories(kortex_motion_widget_node SYSTEM PRIVATE
   ${catkin_INCLUDE_DIRS}
-)  # to use headers from tesseract packages
+)
+
+
 
 message("Pinocchio include dirs: ${pinocchio_INCLUDE_DIRS}")
 # /home/zing/mealAssistiveRobot/sla_ws/devel/include

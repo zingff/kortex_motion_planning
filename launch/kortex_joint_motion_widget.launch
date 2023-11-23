@@ -1,0 +1,6 @@
+  <launch>
+      <!-- motion planning trigger -->
+      <node name="kortex_joint_motion_widget_node" pkg="kortex_motion_planning" type="kortex_joint_motion_widget_node" output="screen">
+      </node>
+
+  </launch>

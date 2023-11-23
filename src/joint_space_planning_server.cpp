@@ -1,22 +1,15 @@
-#include <kortex_motion_planning/planner_profiles.hpp>
+#include <kortex_motion_planning/joint_space_planner_profiles.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
-
 #include <tesseract_common/timer.h>
-
 #include <tesseract_time_parameterization/isp/iterative_spline_parameterization.h>
-
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_monitoring/environment_monitor_interface.h>
-
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-
 #include <tesseract_geometry/mesh_parser.h>
-
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/interface_utils.h>
-
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/state_waypoint.h>
 #include <tesseract_command_language/cartesian_waypoint.h>
@@ -24,25 +17,17 @@
 #include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/profile_dictionary.h>
 #include <tesseract_command_language/utils.h>
-
 #include <tesseract_task_composer/profiles/min_length_profile.h>
 #include <tesseract_task_composer/profiles/iterative_spline_parameterization_profile.h>
 #include <tesseract_task_composer/task_composer_problem.h>
 #include <tesseract_task_composer/task_composer_input.h>
 #include <tesseract_task_composer/task_composer_plugin_factory.h>
-
 #include <tesseract_support/tesseract_support_resource_locator.h>
-
 #include <tesseract_visualization/markers/toolpath_marker.h>
-
 #include <urdf_parser/urdf_parser.h>
-
 #include <moveit/robot_model/robot_model.h>
-
-#include <kortex_motion_planning/GenerateKortexMotionPlan.h>
-
-#include <kortex_driver/BaseCyclic_Feedback.h>  // current state
-
+#include <kortex_motion_planning/GenerateKortexJointMotionPlan.h>
+#include <kortex_driver/BaseCyclic_Feedback.h>
 
 static const std::string TRANSITION_PLANNER = "TRANSITION";
 static const std::string FREESPACE_PLANNER = "FREESPACE";
@@ -76,6 +61,10 @@ static const std::string TASK_COMPOSER_PLUGIN_SUB_PATH = "/config/tesseract/task
 static const std::string URDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.urdf";
 static const std::string SRDF_FILE_PATH = "kortex_description/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf";
 
+const double JOINT_1_LIMIT = 2.41;
+const double JOINT_3_LIMIT = 2.66;
+const double JOINT_5_LIMIT = 2.23;
+
 // TODO: modify the server within the class
 // suanle youdiankongbu
 
@@ -86,7 +75,6 @@ class PlanningServer
   : nh_(n)
   , env_(std::make_shared<tesseract_environment::Environment>())
   {
-    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
     // Load parameter from param server
     ROS_INFO("Ready to load parameters!");
     n.param("plotting", plotting_, true);
@@ -99,6 +87,7 @@ class PlanningServer
     n.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string_);
 
     // Create robot model
+    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
     ROS_INFO("Ready to create robot model!");
     auto locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
     tesseract_common::fs::path urdf_path = locator->locateResource("package://" + URDF_FILE_PATH)->getFilePath();
@@ -162,10 +151,10 @@ class PlanningServer
       // profile_dictionary_->addProfile<tesseract_planning::TrajOptPlanProfile>(TRAJOPT_DEFAULT_NAMESPACE, PROFILE, createTrajOptToolZFreePlanProfile());
       // ROS_INFO("TrajOpt plan profile (z axis rotation-free) added!");
 
-      profile_dictionary_->addProfile<tesseract_planning::DescartesPlanProfile<float>>(
-        DESCARTES_DEFAULT_NAMESPACE, PROFILE, 
-        createDescartesPlanProfile<float>());
-      ROS_INFO("Descartes profile added!");
+      // profile_dictionary_->addProfile<tesseract_planning::DescartesPlanProfile<float>>(
+      //   DESCARTES_DEFAULT_NAMESPACE, PROFILE, 
+      //   createDescartesPlanProfile<float>());
+      // ROS_INFO("Descartes profile added!");
 
       // profile_dictionary_->addProfile<tesseract_planning::MinLengthProfile>(
       //   MIN_LENGTH_DEFAULT_NAMESPACE, PROFILE,
@@ -181,9 +170,13 @@ class PlanningServer
     }
   }
 
+  // bool plan(
+  //   kortex_motion_planning::GenerateKortexMotionPlan::Request &req,
+  //   kortex_motion_planning::GenerateKortexMotionPlan::Response &res
+  // )
   bool plan(
-    kortex_motion_planning::GenerateKortexMotionPlan::Request &req,
-    kortex_motion_planning::GenerateKortexMotionPlan::Response &res
+    kortex_motion_planning::GenerateKortexJointMotionPlan::Request &req,
+    kortex_motion_planning::GenerateKortexJointMotionPlan::Response &res
   )
   {
     try
@@ -200,55 +193,42 @@ class PlanningServer
       ROS_INFO("Joint names got!");
       auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
       Eigen::VectorXd start_configuration(DOF);
+      std::cout << "hhhhh" << std::endl;
       for (int i = 0; i < DOF; i++)
       {
-        double joint_position = stateFeedback->actuators[i].position/(180.0/M_PI);
-        // std::cout << "The joint position is: " << joint_position << std::endl;
-        if ((i == 1 && abs(joint_position) >= 2.41) || 
-            (i == 3 && abs(joint_position) >= 2.66) ||
-            (i == 5 && abs(joint_position) >= 2.23))
-        {
-          if (joint_position < 0)
-          {
-            joint_position += 2 * M_PI;
-          }
-          else
-          {
-            joint_position -= 2 * M_PI;
-          }
-        }
-        start_configuration(i) = joint_position;
+        start_configuration(i) = stateFeedback->actuators[i].position/(180.0/M_PI);
         std::cout << start_configuration(i) << std::endl;
       }
+      start_configuration = adjustJointPositions(start_configuration);
 
+      std::cout << "1" << std::endl;
+      // TODO: to modify
       // Initialize target configuration
-      Eigen::Translation3d target_translation;
-      target_translation.x() = req.target_pose.position.x;
-      target_translation.y() = req.target_pose.position.y;
-      target_translation.z() = req.target_pose.position.z;
-      Eigen::Quaterniond target_quaternion;
-
-      target_quaternion.x() = req.target_pose.orientation.x;
-      target_quaternion.y() = req.target_pose.orientation.y;
-      target_quaternion.z() = req.target_pose.orientation.z;
-      target_quaternion.w() = req.target_pose.orientation.w;
-
-      Eigen::Isometry3d target_configuration;  // cartesian
-
-      target_configuration = Eigen::Isometry3d::Identity() * target_translation * target_quaternion;
+      Eigen::VectorXd target_joint_positions(DOF);
+      std::cout << "2" << std::endl;
+      for (size_t i = 0; i < DOF; i++)
+      {
+              std::cout << "3" << std::endl;
+        target_joint_positions(i) = req.target_positions.joint_positions[i];
+      }   
+            std::cout << "4" << std::endl;
+      target_joint_positions = adjustJointPositions(target_joint_positions);
 
       // Set initial state in the tesseract environment
+            std::cout << "5" << std::endl;
       env_->setState(joint_names_, start_configuration);
-
+      std::cout << "6" << std::endl;
       // Set up composite instruction and environment
-      tesseract_planning::CompositeInstruction program = createProgram(manipulator_info, target_configuration);
-
+      tesseract_planning::CompositeInstruction program = createProgram(manipulator_info, target_joint_positions);
+      std::cout << "7" << std::endl;
       // Set up task composer problem
       std::string config_path = ros::package::getPath(TASK_COMPOSER_PLUGIN_PKG_NAME);
+            std::cout << "8" << std::endl;
       if (config_path.empty())
       {
         ROS_ERROR("Failed to get path of config file, please check!");
       }
+            std::cout << "9" << std::endl;
       config_path += TASK_COMPOSER_PLUGIN_SUB_PATH;
       tesseract_planning::TaskComposerPluginFactory factory(YAML::LoadFile(config_path));
       ROS_INFO("Task composer plugin factory created!");
@@ -381,7 +361,8 @@ class PlanningServer
   // TODO: only starting and target waypoints are given
   tesseract_planning::CompositeInstruction createProgram(
     const tesseract_common::ManipulatorInfo& info, 
-    const Eigen::Isometry3d& end_pose
+    // const Eigen::Isometry3d& end_pose,  // 2joint
+    const Eigen::VectorXd& target_positions
   )
   {
     // Get joint names
@@ -394,11 +375,15 @@ class PlanningServer
     // since the start move instruction is deprecated
     tesseract_planning::StateWaypoint current_state(joint_names, env_->getCurrentJointValues(joint_names));// wp0
     tesseract_planning::StateWaypointPoly current_state_poly{current_state};  // wp0
-    tesseract_planning::MoveInstruction start_instrction(current_state_poly, tesseract_planning::MoveInstructionType::FREESPACE, PROFILE, info);  // start_instruction
+    tesseract_planning::MoveInstruction start_instrction(current_state_poly, tesseract_planning::MoveInstructionType::LINEAR, PROFILE, info);  // start_instruction
     start_instrction.setDescription("Start instruction");
 
-    tesseract_planning::CartesianWaypointPoly wp_1{tesseract_planning::CartesianWaypoint(end_pose)};  //wp1
-    tesseract_planning::MoveInstruction move_1(wp_1, tesseract_planning::MoveInstructionType::LINEAR, PROFILE, info);
+    tesseract_planning::StateWaypoint target_state(joint_names, target_positions);
+    tesseract_planning::StateWaypointPoly target_state_poly{target_state};  // wp1
+
+    // tesseract_planning::CartesianWaypointPoly wp_1{tesseract_planning::CartesianWaypoint(end_pose)};  //wp1
+
+    tesseract_planning::MoveInstruction move_1(target_state_poly, tesseract_planning::MoveInstructionType::LINEAR, PROFILE, info);
     move_1.setDescription("Target move instruction"); // plan_f0
     // tesseract_planning::CompositeInstruction to_end(PROFILE);
     // to_end.setDescription("Target composite instruction");
@@ -490,6 +475,38 @@ class PlanningServer
     {
       current_joint_position_(i) = stateFeedback->actuators[i].position / (180 / M_PI);
     }
+  }
+
+  Eigen::VectorXd adjustJointPositions(const Eigen::VectorXd& original_positions) {
+      Eigen::VectorXd adjusted_positions = original_positions;
+      std::cout << "gggg" << std::endl;
+
+      for (int i = 0; i < DOF; i++) {
+          if (i == 1 || i == 3 || i == 5) {
+              double joint_position = adjusted_positions(i);
+              std::cout << "kkk" <<  std::endl;
+
+              if ((i == 1 && std::abs(joint_position) >= JOINT_1_LIMIT) || 
+                  (i == 3 && std::abs(joint_position) >= JOINT_3_LIMIT) ||
+                  (i == 5 && std::abs(joint_position) >= JOINT_5_LIMIT)) {
+                  
+                  if (joint_position < 0) {
+                      joint_position += 2 * M_PI;
+                  } else {
+                      joint_position -= 2 * M_PI;
+                  }
+
+                  adjusted_positions(i) = joint_position;
+              }
+          }
+      }
+      for (size_t i = 0; i < DOF; i++)
+      {
+        std::cout << adjusted_positions(i) << std::endl;
+      }
+      
+
+      return adjusted_positions;
   }
 
   ros::NodeHandle nh_;

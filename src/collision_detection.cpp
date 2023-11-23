@@ -9,6 +9,7 @@
 #include <kortex_driver/BaseCyclic_Feedback.h>
 #include <kortex_driver/StopAction.h>
 #include <cmath>
+#include <std_msgs/Bool.h>
 
 #ifndef KORTEX_CONFIG_DIR
   #define KORTEX_CONFIG_DIR "/home/zing/mealAssistiveRobot/sla_ws/src/kortex_motion_planning/config"
@@ -16,6 +17,7 @@
 
 static const int DOF = 7;
 static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
+static const std::vector<double> TAU_THRESHOLD = {3.0, -3.0};
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
     return (M_PI / 180.0) * degreesVector;
@@ -30,6 +32,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "collision_detection");
     ros::NodeHandle nh;
+    ros::Publisher collision_status_pub = nh.advertise<std_msgs::Bool>("/collision_status", 10);
 
     // Path to urdf model, you can also pass the model path by the second param argv[1]
     const std::string urdf_filename = (argc<=1) ? KORTEX_CONFIG_DIR + std::string("/robot/gen3_robotiq_2f_85.urdf") : argv[1];
@@ -45,7 +48,7 @@ int main(int argc, char** argv)
     // Initialize dynamic variables
     Eigen::VectorXd q_measured = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd v_measured = Eigen::VectorXd::Zero(DOF);
-    Eigen::VectorXd a_measured = Eigen::VectorXd::Zero(DOF); // not available yet
+    Eigen::VectorXd a_measured = Eigen::VectorXd::Zero(DOF); // acquire via momentum observer
     Eigen::VectorXd tau_measured = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd tau_estimated = Eigen::VectorXd::Zero(DOF);
     Eigen::VectorXd delta_tau = Eigen::VectorXd::Zero(DOF);
@@ -71,7 +74,6 @@ int main(int argc, char** argv)
       {
         q_measured(i) = feedback->actuators[i].position;
         v_measured(i) = feedback->actuators[i].velocity;
-        // a_measured(i) = feedback->actuators[i].
         tau_measured(i) = - feedback->actuators[i].torque;
         // std::cout << i << ": " << feedback->actuators[i].current_motor << "; " <<
         // feedback->actuators[i].torque << "; " << feedback->actuators[i].torque/feedback->actuators[i].current_motor << std::endl;
@@ -116,19 +118,26 @@ int main(int argc, char** argv)
           return 1;
       }
 
-      if (delta_tau.maxCoeff() >= 3.0)
+      // Check for excessive joint torque
+      std_msgs::Bool collision_state;
+      collision_state.data = false;
+      if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
       {
         ROS_WARN("Excessive joint torque detected! Stopping!");
         if (stop_client.call(stop_action))
         {
-            ROS_INFO("Succeeded to Stop!");
+          collision_state.data = true;
+          ROS_INFO("Succeeded to Stop!");
         }
         else
         {
-            ROS_ERROR("Failed to stop! Press emergency stop!");
-            return 1;
+          collision_state.data = false;
+          ROS_ERROR("Failed to stop! Press emergency stop!");
+          return 1;
         }
       }
+      collision_status_pub.publish(collision_state);
+      ros::spinOnce();
     }
     return 0;
 }

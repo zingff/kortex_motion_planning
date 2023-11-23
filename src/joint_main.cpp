@@ -1,8 +1,9 @@
 #include <ros/ros.h>
 #include <chrono>
 #include <thread>
-#include <kortex_motion_planning/GenerateKortexMotionPlan.h>
 #include <kortex_motion_planning/ExecuteMotionPlan.h>
+#include <kortex_motion_planning/JointPositions.h>
+#include <kortex_motion_planning/GenerateKortexJointMotionPlan.h>
 #include <kortex_driver/BaseCyclic_Feedback.h>
 #include <Eigen/Geometry>
 #include <tf2/LinearMath/Quaternion.h>
@@ -17,7 +18,7 @@ class KortexMotionWidget
   public:
   KortexMotionWidget()
   {
-    motion_planning_client_ = nh_.serviceClient<kortex_motion_planning::GenerateKortexMotionPlan>(PLANNING_SERVICE);
+    motion_planning_client_ = nh_.serviceClient<kortex_motion_planning::GenerateKortexJointMotionPlan>(PLANNING_SERVICE);
     motion_execution_client_ = nh_.serviceClient<kortex_motion_planning::ExecuteMotionPlan>(MOTION_EXECUTION_SERVICE);
   }
   void plan()
@@ -38,7 +39,7 @@ class KortexMotionWidget
     // double y = stateFeedback->base.tool_pose_y;
     // double z = stateFeedback->base.tool_pose_z;
 
-    Eigen::Quaterniond target_quaternion;
+    // Eigen::Quaterniond target_quaternion;
     // target_quaternion = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
     //           * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
     //           * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
@@ -57,54 +58,31 @@ class KortexMotionWidget
     // target_pose_.orientation.z = -0.604657;
     // target_pose_.orientation.w = 0.4928685;
 
-    // initial
-    // 0.285026, -0.0202379, 0.316972, 0.690882, 0.703843, 0.093615, 0.136099
-    target_pose_.position.x = 0.285026;
-    target_pose_.position.y = -0.0202379;
-    target_pose_.position.z = 0.316972;
-    target_pose_.orientation.x = 0.690882;
-    target_pose_.orientation.y = 0.703843;
-    target_pose_.orientation.z = 0.093615;
-    target_pose_.orientation.w = 0.136099;
+    // tf2::Quaternion quaternion;
+    // quaternion.setX(target_pose_.orientation.x);
+    // quaternion.setY(target_pose_.orientation.y);
+    // quaternion.setZ(target_pose_.orientation.z);
+    // quaternion.setW(target_pose_.orientation.w);
+    // quaternion.normalize();
 
+    // target_pose_.orientation.x = quaternion.getX();
+    // target_pose_.orientation.y = quaternion.getY();
+    // target_pose_.orientation.z = quaternion.getZ();
+    // target_pose_.orientation.w = quaternion.getW();
 
-    // // demo for welding
-    // target_pose_.position.x = 0.563152;
-    // target_pose_.position.y = -0.157454 + 0.25;
-    // target_pose_.position.z = 0.160644;
-    // target_pose_.orientation.x = 0.596603;
-    // target_pose_.orientation.y = 0.627089;
-    // target_pose_.orientation.z = 0.352663;
-    // target_pose_.orientation.w = 0.355602;
+    // std::cout << "normalized quaternion:" << std::endl;
+    // std::cout << "x: " << target_pose_.orientation.x << std::endl;
+    // std::cout << "y: " << target_pose_.orientation.y << std::endl;
+    // std::cout << "z: " << target_pose_.orientation.z << std::endl;
+    // std::cout << "w: " << target_pose_.orientation.w << std::endl;
 
-    // // pre-feeding
-    // target_pose_.position.x = 0.31029;
-    // target_pose_.position.y = -0.00418602;
-    // target_pose_.position.z = 0.261058 + 0.12;
-    // target_pose_.orientation.x = 0.683811;
-    // target_pose_.orientation.y = 0.703735;
-    // target_pose_.orientation.z = 0.128924;
-    // target_pose_.orientation.w = 0.143314;
+    //  initial position for test
+    target_positions_.joint_positions.resize(DOF);
+    // std::vector<float> target_pos;
+    // target_pos = {0.0212474, 6.01921-6.28, 3.15111, 4.13476-6.28, 0.0608379, 5.37321-6.28, 1.58046};
+    target_positions_.joint_positions = {0.0212474, 6.01921-6.28, 3.15111, 4.13476-6.28, 0.0608379, 5.37321-6.28, 1.58046};
 
-    tf2::Quaternion quaternion;
-    quaternion.setX(target_pose_.orientation.x);
-    quaternion.setY(target_pose_.orientation.y);
-    quaternion.setZ(target_pose_.orientation.z);
-    quaternion.setW(target_pose_.orientation.w);
-    quaternion.normalize();
-
-    target_pose_.orientation.x = quaternion.getX();
-    target_pose_.orientation.y = quaternion.getY();
-    target_pose_.orientation.z = quaternion.getZ();
-    target_pose_.orientation.w = quaternion.getW();
-
-    std::cout << "normalized quaternion:" << std::endl;
-    std::cout << "x: " << target_pose_.orientation.x << std::endl;
-    std::cout << "y: " << target_pose_.orientation.y << std::endl;
-    std::cout << "z: " << target_pose_.orientation.z << std::endl;
-    std::cout << "w: " << target_pose_.orientation.w << std::endl;
-
-    motion_planning_service_.request.target_pose = target_pose_;
+    motion_planning_service_.request.target_positions.joint_positions = target_positions_.joint_positions;
     if (motion_planning_client_.call(motion_planning_service_.request, motion_planning_service_.response))
     {
       ROS_INFO("Succeeded to call kortex motion planning service!");
@@ -141,13 +119,14 @@ class KortexMotionWidget
 
   private:
   ros::NodeHandle nh_;
-  geometry_msgs::Pose target_pose_;
+  // geometry_msgs::Pose target_pose_;
+  kortex_motion_planning::JointPositions target_positions_;
   ros::ServiceClient motion_planning_client_;
   ros::ServiceClient motion_execution_client_;
   std::shared_ptr<trajectory_msgs::JointTrajectory> motion_plan_{ nullptr };
-  kortex_motion_planning::GenerateKortexMotionPlan motion_planning_service_;
+  kortex_motion_planning::GenerateKortexJointMotionPlan motion_planning_service_;
   kortex_motion_planning::ExecuteMotionPlan motion_execution_service_;
-  kortex_motion_planning::GenerateKortexMotionPlanResponse motion_plan_response_;
+  kortex_motion_planning::GenerateKortexJointMotionPlanResponse motion_plan_response_;
 };
 
 int main(int argc, char **argv)
@@ -156,7 +135,7 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  geometry_msgs::Pose target_pose;  
+  // geometry_msgs::Pose target_pose;  
 
   KortexMotionWidget KMT;
   ROS_INFO("Kortex planning motion widget initialized!");

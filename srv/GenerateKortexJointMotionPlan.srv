@@ -1,0 +1,10 @@
+# Request
+kortex_motion_planning/JointPositions target_positions
+
+---
+
+#Response
+trajectory_msgs/JointTrajectory motion_plan
+bool success
+string message
+

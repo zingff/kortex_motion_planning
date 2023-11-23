@@ -19,8 +19,13 @@
   <depend>tesseract_urdf</depend>
   <depend>tesseract_kinematics</depend>
   <depend>geometry_msgs</depend>
-  <depend>trajectory_msgs</depend>
   <depend>pinocchio</depend>
+
+
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>trajectory_msgs</build_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
 
 
   <build_depend>message_generation</build_depend>
