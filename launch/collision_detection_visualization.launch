@@ -1,8 +1,8 @@
   <launch>
       <!-- collision detection data saving and real-time visualization -->
       <group>
-        <node name="collision_detection" pkg="kortex_motion_planning" type="collision_detection" output="screen">
-        </node>
+        <!-- <node name="collision_detection" pkg="kortex_motion_planning" type="collision_detection" output="screen">
+        </node> -->
 
         <node name="collision_detection_visualization" pkg="kortex_motion_planning" type="collision_detection_visualization" output="screen">
         </node>

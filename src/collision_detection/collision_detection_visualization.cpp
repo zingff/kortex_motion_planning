@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
     QCPItemLine *linePos = new QCPItemLine(customPlot);
     QCPItemLine *lineNeg = new QCPItemLine(customPlot);
     customPlot->xAxis->setLabel("Time (ms)");
-    customPlot->yAxis->setLabel("Torque (Nm)");
+    customPlot->yAxis->setLabel("Delta torque (Nm)");
     customPlot->legend->setVisible(true);
     customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop | Qt::AlignLeft);
 
@@ -193,7 +193,20 @@ int main(int argc, char** argv) {
           outFile << currentTime << ", ";
           for (int i = 0; i < delta_tau.size(); ++i) {
               outFile << delta_tau(i);
-              if (i < delta_tau.size() - 1)
+              outFile << ", ";
+          }
+          for (int i = 0; i < tau_estimated.size(); ++i) {
+              outFile << tau_estimated(i);
+              outFile << ", ";
+          }
+          for (int i = 0; i < tau_measured.size(); ++i) {
+              outFile << tau_measured(i);
+              // if (i < tau_measured.size() - 1)
+                  outFile << ", ";
+          }
+          for (int i = 0; i < q_measured.size(); ++i) {
+              outFile << q_measured(i);
+              if (i < q_measured.size() - 1)
                   outFile << ", ";
           }
           outFile << std::endl;
@@ -216,19 +229,19 @@ int main(int argc, char** argv) {
       QApplication::processEvents();
 
       // Check for excessive joint torque
-      // if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
-      // {
-      //   ROS_WARN("Excessive joint torque detected! Stopping!");
-      //   if (stop_client.call(stop_action))
-      //   {
-      //       ROS_INFO("Succeeded to Stop!");
-      //   }
-      //   else
-      //   {
-      //       ROS_ERROR("Failed to stop! Press emergency stop!");
-      //       return 1;
-      //   }
-      // }
+      if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
+      {
+        ROS_WARN("Excessive joint torque detected! Stopping!");
+        if (stop_client.call(stop_action))
+        {
+            ROS_INFO("Succeeded to Stop!");
+        }
+        else
+        {
+            ROS_ERROR("Failed to stop! Press emergency stop!");
+            // return 1;
+        }
+      }
     }
 
     return app.exec();

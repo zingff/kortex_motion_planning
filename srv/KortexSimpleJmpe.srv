@@ -1,0 +1,7 @@
+# Request
+kortex_motion_planning/JointPositions target_positions
+
+---
+
+#Response
+bool success

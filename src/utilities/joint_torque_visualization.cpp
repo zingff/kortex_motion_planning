@@ -56,7 +56,7 @@ void updatePlot(const Eigen::VectorXd& tau_measured, qint64 startingTime) {
     customPlot->graph(6)->setPen(pen7);
 
     customPlot->xAxis->setRange(currentTime + 1000, currentTime - 59000);
-    customPlot->yAxis->setRange(-10, 10);
+    customPlot->yAxis->setRange(-100, 100);
 
     customPlot->replot();
 }

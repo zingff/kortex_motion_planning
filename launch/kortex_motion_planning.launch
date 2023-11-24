@@ -13,10 +13,10 @@
   <arg name="verbose" default="false"/>
 
   <!-- Load universal robot description format (URDF) -->
-  <param name="$(arg robot_description)" command="$(find xacro)/xacro --inorder '$(find kortex_description)/robots/urdf/gen3_robotiq_2f_85_tesseract.xacro'" />
+  <param name="$(arg trajopt_description)" command="$(find xacro)/xacro --inorder '$(find kortex_description)/robots/urdf/gen3_robotiq_2f_85_tesseract.xacro'" />
 
   <!-- The semantic description that corresponds to the URDF -->
-  <param name="$(arg robot_description)_semantic" textfile="$(find kortex_description)/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf" />
+  <param name="$(arg trajopt_description)_semantic" textfile="$(find kortex_description)/robots/urdf/gen3_robotiq_2f_85_tesseract.srdf" />
 
   <group unless="$(arg testing)">
     <!-- If needed, broadcast static tf for robot root -->

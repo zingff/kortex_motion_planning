@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   moveit_core
+  # moveit_ros_planning
   moveit_ros_planning_interface
   std_srvs
   tesseract_monitoring
@@ -67,6 +68,7 @@ add_service_files(
   GenerateKortexMotionPlan.srv
   ExecuteMotionPlan.srv
   GenerateKortexJointMotionPlan.srv
+  KortexSimpleJmpe.srv
 )
 generate_messages(
   DEPENDENCIES
@@ -248,18 +250,15 @@ target_include_directories(kortex_motion_widget_node SYSTEM PRIVATE
   ${catkin_INCLUDE_DIRS}
 )
 
-
-
 message("Pinocchio include dirs: ${pinocchio_INCLUDE_DIRS}")
 # /home/zing/mealAssistiveRobot/sla_ws/devel/include
 message("Pinocchio library dirs: ${pinocchio_LIBRARY_DIRS}")
 # none
     
-
 # collision detection
 link_directories(${PINOCCHIO_LIB_DIRS}) # libpinocchio
 add_executable(collision_detection 
-  src/collision_detection.cpp
+  src/collision_detection/collision_detection.cpp
 )
 target_link_libraries(
   collision_detection
@@ -267,12 +266,12 @@ target_link_libraries(
   pinocchio
 )
 
-# qt
-add_executable(joint_torque_realtime_plot 
-  src/utilities/joint_torque_realtime_plot.cpp
+# joint torque visualization
+add_executable(joint_torque_visualization 
+  src/utilities/joint_torque_visualization.cpp
 )
 target_link_libraries(
-  joint_torque_realtime_plot
+  joint_torque_visualization
   ${catkin_LIBRARIES}  # add this line to use ros properly
   Qt5::Widgets
   ${QCustomPlot_LIBRARIES}
@@ -281,7 +280,7 @@ target_link_libraries(
 # collision detection visualization
 link_directories(${PINOCCHIO_LIB_DIRS}) # libpinocchio
 add_executable(collision_detection_visualization 
-  src/collision_detection_visualization.cpp
+  src/collision_detection/collision_detection_visualization.cpp
 )
 target_link_libraries(
   collision_detection_visualization
@@ -290,6 +289,23 @@ target_link_libraries(
   ${QCustomPlot_LIBRARIES}
   pinocchio
 )
+
+# simple jmpe
+add_executable(simple_jmpe
+	src/simple_jmpe.cpp
+)
+target_link_libraries(simple_jmpe 
+  ${catkin_LIBRARIES}
+)
+add_dependencies(simple_jmpe 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+
+
+#####################################
+########## FOR UNCLEAR USE ##########
+#####################################
 
 # Plugin Library
 add_library(${PROJECT_NAME}_plugins SHARED 
@@ -305,10 +321,10 @@ target_include_directories(${PROJECT_NAME}_plugins SYSTEM PUBLIC
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-# Install the executable(s)
+# Install the executable
 install(TARGETS ${PROJECT_NAME}_node 
   DESTINATION lib/${PROJECT_NAME})
-# Install the library(ies)
+# Install the library
 install(TARGETS ${PROJECT_NAME}_plugins EXPORT 
   ${PROJECT_NAME}-targets DESTINATION lib)
 install(DIRECTORY config launch DESTINATION share/${PROJECT_NAME}/)

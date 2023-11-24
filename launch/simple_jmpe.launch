@@ -1,0 +1,5 @@
+<launch>
+    <group >
+        <node pkg="kortex_motion_planning" name="simple_jmpe" type="simple_jmpe" output="screen" required="true"/>
+    </group>
+</launch>

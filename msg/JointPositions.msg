@@ -1,2 +1,2 @@
-float32[] joint_positions
+float64[] joint_positions
 
