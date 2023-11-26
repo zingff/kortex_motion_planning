@@ -118,6 +118,7 @@ class MotionExecutionServer
       // TODO: modify into switch case form to consider all outcomes
       motion_execution_client_.sendGoal(goal_msg);
       motion_execution_client_.waitForResult(ros::Duration(goal_msg.trajectory.points.back().time_from_start.sec) * 1.0);
+      
 
       // Check if the robot is static
       // TODO: add timer
