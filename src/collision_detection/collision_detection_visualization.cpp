@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
       // std::cout << "Joint torque: " << data.tau.head(7).transpose() << std::endl;
       tau_estimated = data.tau.head(DOF);
       delta_tau = (tau_estimated - tau_measured);
-      std::cout << "Delta torque " << delta_tau.transpose() << std::endl;
+      // std::cout << "Delta torque " << delta_tau.transpose() << std::endl;
 
       std::ofstream outFile(filename, std::ios::app);  
       if (outFile.is_open())
@@ -206,7 +206,12 @@ int main(int argc, char** argv) {
           }
           for (int i = 0; i < q_measured.size(); ++i) {
               outFile << q_measured(i);
-              if (i < q_measured.size() - 1)
+              // if (i < q_measured.size() - 1)
+                  outFile << ", ";
+          }
+          for (int i = 0; i < v_measured.size(); ++i) {
+              outFile << q_measured(i);
+              if (i < v_measured.size() - 1)
                   outFile << ", ";
           }
           outFile << std::endl;

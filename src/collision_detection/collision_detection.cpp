@@ -10,14 +10,23 @@
 #include <kortex_driver/StopAction.h>
 #include <cmath>
 #include <std_msgs/Bool.h>
+#include <QApplication>
+#include "qcustomplot.h"
 
 #ifndef KORTEX_CONFIG_DIR
   #define KORTEX_CONFIG_DIR "/home/zing/mealAssistiveRobot/sla_ws/src/kortex_motion_planning/config"
 #endif
 
+#define RESET   "\033[0m"
+#define RED     "\033[1;31m"
+#define GREEN   "\033[1;32m"
+#define YELLOW   "\033[1;33m"
+
+
 static const int DOF = 7;
 static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
 static const std::vector<double> TAU_THRESHOLD = {3.0, -3.0};
+static const std::string COLLISION_STATUS_MESSAGE_NAME = "/kortex_motion_planning/collision_detection";
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
     return (M_PI / 180.0) * degreesVector;
@@ -30,9 +39,12 @@ Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
 
 int main(int argc, char** argv)
 {
+    ROS_INFO(GREEN "Collision detecting for Kinova Gen3" RESET);
     ros::init(argc, argv, "collision_detection");
     ros::NodeHandle nh;
-    ros::Publisher collision_status_pub = nh.advertise<std_msgs::Bool>("/collision_status", 10);
+    ros::Publisher collision_status_pub = nh.advertise<std_msgs::Bool>(COLLISION_STATUS_MESSAGE_NAME, 10);
+
+    QApplication app(argc, argv);
 
     // Path to urdf model, you can also pass the model path by the second param argv[1]
     const std::string urdf_filename = (argc<=1) ? KORTEX_CONFIG_DIR + std::string("/robot/gen3_robotiq_2f_85.urdf") : argv[1];
@@ -57,13 +69,23 @@ int main(int argc, char** argv)
     Eigen::VectorXd v = Eigen::VectorXd::Zero(model.nv);
     Eigen::VectorXd a = Eigen::VectorXd::Zero(model.nv);
 
-    for (size_t i = 0; i < model.joints.size(); i++)
-    {
-      std::cout << model.joints[i] << std::endl;
-    }
+    // for (size_t i = 0; i < model.joints.size(); i++)
+    // {
+    //   std::cout << model.joints[i] << std::endl;
+    // }
 
     ros::ServiceClient stop_client = nh.serviceClient<kortex_driver::StopAction>("/base/stop_action");
     kortex_driver::StopAction stop_action;
+
+    qint64 startingTimeStamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
+
+    // Generate timestamp and create file name with it
+    std::time_t now = std::time(nullptr);
+    std::tm *ltm = std::localtime(&now);
+    std::stringstream ss;
+    ss << std::put_time(ltm, "%Y%m%d%H%M%S");
+    std::string timestamp = ss.str();
+    std::string filename = data_dir + "collisionDetectionData" + timestamp + ".csv";
 
     // Force checking loop
     while (true)
@@ -101,15 +123,37 @@ int main(int argc, char** argv)
       // std::cout << "Joint torque: " << data.tau.head(7).transpose() << std::endl;
       tau_estimated = data.tau.head(DOF);
       delta_tau = (tau_estimated - tau_measured).cwiseAbs();
-      std::cout << "Delta torque " << delta_tau.transpose() << std::endl;
+      // std::cout << "Delta torque " << delta_tau.transpose() << std::endl;
 
-      std::ofstream outFile(data_dir + "data.txt", std::ios::app);
+      qint64 currentTime = (QDateTime::currentDateTime().toMSecsSinceEpoch() - startingTimeStamp);
+      std::ofstream outFile(filename, std::ios::app);  
       if (outFile.is_open())
       {
-          outFile << "q_measured: " << q_measured.transpose() << std::endl;
-          outFile << "tau_estimated: " << tau_estimated.transpose() << std::endl;
-          outFile << "tau_measured: " << tau_measured.transpose() << std::endl;
-          outFile << "delta_tau: " << delta_tau.transpose() << std::endl;
+          outFile << currentTime << ", ";
+          for (int i = 0; i < delta_tau.size(); ++i) {
+              outFile << delta_tau(i);
+              outFile << ", ";
+          }
+          for (int i = 0; i < tau_estimated.size(); ++i) {
+              outFile << tau_estimated(i);
+              outFile << ", ";
+          }
+          for (int i = 0; i < tau_measured.size(); ++i) {
+              outFile << tau_measured(i);
+              // if (i < tau_measured.size() - 1)
+                  outFile << ", ";
+          }
+          for (int i = 0; i < q_measured.size(); ++i) {
+              outFile << q_measured(i);
+              // if (i < q_measured.size() - 1)
+                  outFile << ", ";
+          }
+          for (int i = 0; i < v_measured.size(); ++i) {
+              outFile << q_measured(i);
+              if (i < v_measured.size() - 1)
+                  outFile << ", ";
+          }
+          outFile << std::endl;
           outFile.close();
       }
       else
@@ -123,17 +167,20 @@ int main(int argc, char** argv)
       collision_state.data = false;
       if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
       {
-        ROS_WARN("Excessive joint torque detected! Stopping!");
+        // ROS_WARN("Excessive joint torque detected! Stopping!");
+        ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
         if (stop_client.call(stop_action))
         {
           collision_state.data = true;
-          ROS_INFO("Succeeded to Stop!");
+          // ROS_INFO("Succeeded to Stop!");
+          ROS_INFO(GREEN "Succeeded to Stop!" RESET);
         }
         else
         {
           collision_state.data = false;
-          ROS_ERROR("Failed to stop! Press emergency stop!");
-          return 1;
+          // ROS_ERROR("Failed to stop! Press emergency stop!");
+          ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
+          // return 1;
         }
       }
       collision_status_pub.publish(collision_state);

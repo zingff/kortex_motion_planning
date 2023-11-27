@@ -264,6 +264,8 @@ target_link_libraries(
   collision_detection
   ${catkin_LIBRARIES}  # add this line to use ros properly
   pinocchio
+  Qt5::Widgets
+  ${QCustomPlot_LIBRARIES}
 )
 
 # joint torque visualization
