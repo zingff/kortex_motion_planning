@@ -21,7 +21,7 @@
 static const int DOF = 7;
 static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
 QCustomPlot* customPlot;
-static const std::vector<double> TAU_THRESHOLD = {3.0, -3.0};
+static const std::vector<double> TAU_THRESHOLD = {4.0, -4.0};
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
     return (M_PI / 180.0) * degreesVector;

@@ -21,11 +21,12 @@
 #define RED     "\033[1;31m"
 #define GREEN   "\033[1;32m"
 #define YELLOW   "\033[1;33m"
+#define CYAN   "\033[1;38;5;123m"
 
 
 static const int DOF = 7;
 static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
-static const std::vector<double> TAU_THRESHOLD = {3.0, -3.0};
+static const std::vector<double> TAU_THRESHOLD = {3.4, -3.4};
 static const std::string COLLISION_STATUS_MESSAGE_NAME = "/kortex_motion_planning/collision_detection";
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
@@ -167,21 +168,30 @@ int main(int argc, char** argv)
       collision_state.data = false;
       if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
       {
-        // ROS_WARN("Excessive joint torque detected! Stopping!");
+        // std::cout << "Delta torque " << delta_tau.transpose() << std::endl;
+        ROS_INFO(CYAN "Delta tau: " RESET);
+        ROS_INFO_STREAM(CYAN << delta_tau.transpose() << RESET);
         ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
         if (stop_client.call(stop_action))
         {
-          collision_state.data = true;
-          // ROS_INFO("Succeeded to Stop!");
           ROS_INFO(GREEN "Succeeded to Stop!" RESET);
         }
         else
         {
-          collision_state.data = false;
-          // ROS_ERROR("Failed to stop! Press emergency stop!");
           ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
           // return 1;
         }
+
+        collision_state.data = true;
+        ros::Time start_time = ros::Time::now();
+        while (ros::Time::now() - start_time < ros::Duration(1.0)) {
+            collision_status_pub.publish(collision_state);
+            ros::spinOnce();
+            ros::Duration(0.1).sleep();  
+        }
+
+        collision_state.data = false;
+        collision_status_pub.publish(collision_state);
       }
       collision_status_pub.publish(collision_state);
       ros::spinOnce();

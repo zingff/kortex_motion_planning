@@ -38,7 +38,7 @@ class MotionExecutionServer
       motion_execution_client_.waitForServer(ros::Duration(1.0));
       if(!motion_execution_client_.isServerConnected())
       {
-        ROS_ERROR("Action client is not yet connected!");
+        ROS_WARN("Action client is not yet connected!");
       }
 
       // Send motion plan trajectory
@@ -63,7 +63,7 @@ class MotionExecutionServer
       {
         ROS_WARN("Please check if the robot is moving");
         ROS_WARN("Keep waiting for some seconds.");
-        ros::Duration(5.0).sleep();
+        ros::Duration(1.0).sleep();
       }
 
       ROS_INFO("Original trajectory waypoints:");
@@ -138,7 +138,7 @@ class MotionExecutionServer
       {
         ROS_WARN("Please check if the robot is moving");
         ROS_WARN("Keep waiting for some seconds.");
-        ros::Duration(5.0).sleep();
+        ros::Duration(3.0).sleep();
       }
 
       if (motion_execution_client_.getState() != actionlib::SimpleClientGoalState::LOST)
