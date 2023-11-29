@@ -69,6 +69,7 @@ add_service_files(
   ExecuteMotionPlan.srv
   GenerateKortexJointMotionPlan.srv
   KortexSimpleJmpe.srv
+  KortexSimpleCmpe.srv
 )
 generate_messages(
   DEPENDENCIES
@@ -292,14 +293,27 @@ target_link_libraries(
   pinocchio
 )
 
-# simple jmpe
-add_executable(simple_jmpe
-	src/simple_jmpe.cpp
+# # simple jmpe
+# add_executable(simple_jmpe
+# 	src/simple_jmpe.cpp
+# )
+# target_link_libraries(simple_jmpe 
+#   ${catkin_LIBRARIES}
+# )
+# add_dependencies(simple_jmpe 
+#   ${catkin_EXPORTED_TARGETS}
+# )
+
+
+# simple cmpe
+add_executable(simple_jcmpe
+  src/simple_jcmpe.cpp
+	src/simple_mpe.cpp
 )
-target_link_libraries(simple_jmpe 
+target_link_libraries(simple_jcmpe 
   ${catkin_LIBRARIES}
 )
-add_dependencies(simple_jmpe 
+add_dependencies(simple_jcmpe 
   ${catkin_EXPORTED_TARGETS}
 )
 

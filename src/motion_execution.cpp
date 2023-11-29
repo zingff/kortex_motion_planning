@@ -35,7 +35,7 @@ class MotionExecutionServer
     {
       actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> motion_execution_client_("/gen3_joint_trajectory_controller/follow_joint_trajectory", false);    
       // Check whether motion execution client is connected
-      motion_execution_client_.waitForServer(ros::Duration(1.0));
+      motion_execution_client_.waitForServer(ros::Duration(0.5));
       if(!motion_execution_client_.isServerConnected())
       {
         ROS_WARN("Action client is not yet connected!");
@@ -49,7 +49,7 @@ class MotionExecutionServer
       // TODO: add timer
       trajectory_msgs::JointTrajectoryPoint joint_state_1, joint_state_2;
       joint_state_2 = getJointState();
-      ros::Duration(1.0).sleep();
+      ros::Duration(0.2).sleep();
       joint_state_1 = getJointState();
       double joint_distance = 0;
       for (int i = 0; i < DOF; i++)
@@ -86,6 +86,7 @@ class MotionExecutionServer
       start_traj_point.accelerations = std::vector<double>(start_traj_point.positions.size(), 0);
       start_traj_point.effort = std::vector<double>(start_traj_point.positions.size(), 0);
       goal_msg.trajectory.points[0] = start_traj_point;
+      // TODO: modify the scalar to be an adjustable parameter
       for (size_t i = 0; i < goal_msg.trajectory.points.size(); i++) {
           // goal_msg.trajectory.points[i].time_from_start += goal_msg.trajectory.points[i].time_from_start + goal_msg.trajectory.points[i].time_from_start;
           goal_msg.trajectory.points[i].time_from_start = ros::Duration(goal_msg.trajectory.points[i].time_from_start.toSec() * 2);

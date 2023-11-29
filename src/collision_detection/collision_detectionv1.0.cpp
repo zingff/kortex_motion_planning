@@ -26,9 +26,7 @@
 
 static const int DOF = 7;
 static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
-static const std::vector<double> TAU_THRESHOLD = {3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4};
-// static const std::vector<double> TAU_THRESHOLD = {3.4, -3.4};
-
+static const std::vector<double> TAU_THRESHOLD = {3.4, -3.4};
 static const std::string COLLISION_STATUS_MESSAGE_NAME = "/kortex_motion_planning/collision_detection";
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
@@ -168,65 +166,35 @@ int main(int argc, char** argv)
       // Check for excessive joint torque
       std_msgs::Bool collision_state;
       collision_state.data = false;
-
-      for (size_t i = 0; i < delta_tau.size(); i++)
+      if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
       {
-        if (std::abs(delta_tau(i) > std::abs(TAU_THRESHOLD.at(i))))
+        // std::cout << "Delta torque " << delta_tau.transpose() << std::endl;
+        ROS_INFO(CYAN "Delta tau: " RESET);
+        ROS_INFO_STREAM(CYAN << delta_tau.transpose() << RESET);
+        ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
+        if (stop_client.call(stop_action))
         {
-          ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
-          collision_state.data = true;  // ought to be true
-          ros::Time start_time = ros::Time::now();
-          while (ros::Time::now() - start_time < ros::Duration(1.0)) {
+          ROS_INFO(GREEN "Succeeded to Stop!" RESET);
+        }
+        else
+        {
+          ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
+          // return 1;
+        }
+
+        collision_state.data = true;
+        ros::Time start_time = ros::Time::now();
+        while (ros::Time::now() - start_time < ros::Duration(1.0)) {
             collision_status_pub.publish(collision_state);
             ros::spinOnce();
             ros::Duration(0.1).sleep();  
-          }
-          ROS_INFO(CYAN "Delta tau: " RESET);
-          ROS_INFO_STREAM(CYAN << delta_tau.transpose() << RESET);
+        }
 
-          if (true)
-          // if (stop_client.call(stop_action))
-          {
-            ROS_INFO(GREEN "Succeeded to Stop!" RESET);
-          }
-          else
-          {
-            ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
-          }         
-        }   
+        collision_state.data = false;
+        collision_status_pub.publish(collision_state);
       }
       collision_status_pub.publish(collision_state);
       ros::spinOnce();
-      
-      // if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
-      // {
-      //   // std::cout << "Delta torque " << delta_tau.transpose() << std::endl;
-      //   ROS_INFO(CYAN "Delta tau: " RESET);
-      //   ROS_INFO_STREAM(CYAN << delta_tau.transpose() << RESET);
-      //   ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
-      //   if (stop_client.call(stop_action))
-      //   {
-      //     ROS_INFO(GREEN "Succeeded to Stop!" RESET);
-      //   }
-      //   else
-      //   {
-      //     ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
-      //   }
-
-      //   collision_state.data = false;  // should be true
-      //   ros::Time start_time = ros::Time::now();
-      //   while (ros::Time::now() - start_time < ros::Duration(1.0)) {
-      //       collision_status_pub.publish(collision_state);
-      //       ros::spinOnce();
-      //       ros::Duration(0.1).sleep();  
-      //   }
-
-      //   collision_state.data = false;
-      //   collision_status_pub.publish(collision_state);
-      // }
-
-      // collision_status_pub.publish(collision_state);
-      // ros::spinOnce();
     }
     return 0;
 }
