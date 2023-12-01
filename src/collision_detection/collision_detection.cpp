@@ -26,7 +26,11 @@
 
 static const int DOF = 7;
 static const std::string BASE_FEEDBACK_TOPIC = "/base_feedback";
-static const std::vector<double> TAU_THRESHOLD = {3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4};
+// static const std::vector<double> TAU_BASE = {1.28, 3.6161, 1.2880, 3.2341, 1.9764, 1.1722, 0.6104};
+// static std::vector<double> TAU_THRESHOLD;
+// static const std::vector<double> TAU_THRESHOLD = {3.4, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4};
+static const std::vector<double> TAU_THRESHOLD = {3, 3, 3, 3, 3, 3, 3};
+// static const std::vector<double> TAU_THRESHOLD = {4, 4, 4, 4, 4, 4, 4};
 // static const std::vector<double> TAU_THRESHOLD = {3.4, -3.4};
 
 static const std::string COLLISION_STATUS_MESSAGE_NAME = "/kortex_motion_planning/collision_detection";
@@ -48,6 +52,10 @@ int main(int argc, char** argv)
     ros::Publisher collision_status_pub = nh.advertise<std_msgs::Bool>(COLLISION_STATUS_MESSAGE_NAME, 10);
 
     QApplication app(argc, argv);
+
+    // for (auto& value : TAU_BASE) {
+    //     TAU_THRESHOLD.push_back(1.2 * value);
+    // }
 
     // Path to urdf model, you can also pass the model path by the second param argv[1]
     const std::string urdf_filename = (argc<=1) ? KORTEX_CONFIG_DIR + std::string("/robot/gen3_robotiq_2f_85.urdf") : argv[1];
@@ -168,35 +176,79 @@ int main(int argc, char** argv)
       // Check for excessive joint torque
       std_msgs::Bool collision_state;
       collision_state.data = false;
+      bool collision_detected = false;
 
       for (size_t i = 0; i < delta_tau.size(); i++)
       {
-        if (std::abs(delta_tau(i) > std::abs(TAU_THRESHOLD.at(i))))
-        {
-          ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
-          collision_state.data = true;  // ought to be true
-          ros::Time start_time = ros::Time::now();
-          while (ros::Time::now() - start_time < ros::Duration(1.0)) {
-            collision_status_pub.publish(collision_state);
-            ros::spinOnce();
-            ros::Duration(0.1).sleep();  
-          }
-          ROS_INFO(CYAN "Delta tau: " RESET);
-          ROS_INFO_STREAM(CYAN << delta_tau.transpose() << RESET);
+          if (std::abs(delta_tau(i) > std::abs(TAU_THRESHOLD.at(i))))
+          {
+              ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
+              
+              if (!collision_detected)
+              {
+                  collision_state.data = true;
+                  collision_detected = true;
+                  ros::Time start_time = ros::Time::now();
+                  collision_status_pub.publish(collision_state);
 
-          if (true)
-          // if (stop_client.call(stop_action))
-          {
-            ROS_INFO(GREEN "Succeeded to Stop!" RESET);
+                  ROS_INFO(CYAN "Delta tau: " RESET);
+                  ROS_INFO_STREAM(CYAN << delta_tau.transpose() << RESET);
+
+                  // if (true)
+                  // // if (stop_client.call(stop_action))
+                  // {
+                  //   ROS_INFO(GREEN "Succeeded to Stop!" RESET);
+                  // }
+                  // else
+                  // {
+                  //   ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
+                  // }         
+
+              }
           }
-          else
+          else if (collision_detected)
           {
-            ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
-          }         
-        }   
+              collision_state.data = false;
+              collision_detected = false;
+          }
+
+          if (!collision_detected)
+          {
+              collision_status_pub.publish(collision_state);
+          }
       }
-      collision_status_pub.publish(collision_state);
       ros::spinOnce();
+
+
+
+
+      // std_msgs::Bool collision_state;
+      // collision_state.data = false;
+      // for (size_t i = 0; i < delta_tau.size(); i++)
+      // {
+      //   if (std::abs(delta_tau(i) > std::abs(TAU_THRESHOLD.at(i))))
+      //   {
+      //     ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
+      //     collision_state.data = true;  // ought to be true
+      //     ros::Time start_time = ros::Time::now();
+      //     collision_status_pub.publish(collision_state);
+      //     // ros::Duration(0.6).sleep();
+      //     ROS_INFO(CYAN "Delta tau: " RESET);
+      //     ROS_INFO_STREAM(CYAN << delta_tau.transpose() << RESET);
+
+      //     if (true)
+      //     // if (stop_client.call(stop_action))
+      //     {
+      //       ROS_INFO(GREEN "Succeeded to Stop!" RESET);
+      //     }
+      //     else
+      //     {
+      //       ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
+      //     }         
+      //   }   
+      // }
+      // collision_status_pub.publish(collision_state);
+      // ros::spinOnce();
       
       // if (delta_tau.maxCoeff() >= TAU_THRESHOLD.at(0))
       // {

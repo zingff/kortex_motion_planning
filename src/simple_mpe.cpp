@@ -44,6 +44,8 @@ bool SimpleMpe::moveToJoint(const std::vector<double>& joint_positions) {
 
         // Execute
         moveit::planning_interface::MoveItErrorCode execution_result = move_group_ptr_->execute(joint_motion_plan_);
+        ros::Duration(1.0).sleep();
+    
         bool execution_success = (execution_result == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         if (execution_success) {
             ROS_INFO(GREEN "Joint execution successful" RESET);
@@ -91,7 +93,10 @@ bool SimpleMpe::moveToCartesian(geometry_msgs::Pose target_pose){
         return plan_success;
     }
 
+
+
     moveit::planning_interface::MoveItErrorCode execution_result = this->move_group_ptr_->execute(this->cartesian_motion_plan_);
+    ros::Duration(1.0).sleep();
     bool execution_success = false;
     if (execution_result == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
         execution_success = true;
@@ -157,6 +162,7 @@ bool SimpleMpe::kortexSimpleCartesianMotionPlanningAndExecution(
   target_pose_.orientation = kscmpeRequest.target_pose.orientation;
   bool success;
   success = moveToCartesian(target_pose_);
+  ros::Duration(1.0).sleep();
   if (success)
   {
     ROS_INFO(GREEN "Cartesian motion planning and execution succeeded!" RESET);
