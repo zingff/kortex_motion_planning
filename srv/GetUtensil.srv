@@ -1,0 +1,9 @@
+# Request
+bool get_utensil_flag
+kortex_motion_planning/JointPositions holder_positions
+kortex_motion_planning/JointPositions utensil_positions
+
+---
+
+#Response
+bool success

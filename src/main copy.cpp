@@ -22,42 +22,6 @@ class KortexMotionWidget
   }
   void plan()
   {
-    // auto stateFeedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>(STATE_FEEDBACK_TOPIC);
-    // double roll = stateFeedback->base.tool_pose_theta_x / (180 / M_PI);
-    // double pitch = stateFeedback->base.tool_pose_theta_y / (180 / M_PI);    
-    // double yaw = stateFeedback->base.tool_pose_theta_z / (180 / M_PI);
-    // roll = roll - M_PI;
-    // pitch = pitch - M_PI;
-
-    // Eigen::Vector3d euler(roll, pitch, yaw);
-    // Eigen::AngleAxisd rotation(M_PI / 1, Eigen::Vector3d::UnitZ());
-    // euler = rotation.toRotationMatrix() * euler;
-    // std::cout << euler << std::endl;
-
-    // double x = stateFeedback->base.tool_pose_x;
-    // double y = stateFeedback->base.tool_pose_y;
-    // double z = stateFeedback->base.tool_pose_z;
-
-    Eigen::Quaterniond target_quaternion;
-    // target_quaternion = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
-    //           * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
-    //           * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
-    //           // * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitY());
-    // std::cout << target_quaternion.x() << ", " 
-    //           << target_quaternion.y() << ", "
-    //           << target_quaternion.z() << ", "
-    //           << target_quaternion.w() << std::endl;
-
-    // // feeding
-    // target_pose_.position.x = -0.15135;
-    // target_pose_.position.y = 0.235484;
-    // target_pose_.position.z = 0.557796;
-    // target_pose_.orientation.x = 0.3872724;
-    // target_pose_.orientation.y = -0.4914169;
-    // target_pose_.orientation.z = -0.604657;
-    // target_pose_.orientation.w = 0.4928685;
-
-    // bowl placement 
     target_pose_.position.x = 0.420817;
     target_pose_.position.y = -0.142423;
     target_pose_.position.z = 0.151256;
@@ -65,35 +29,6 @@ class KortexMotionWidget
     target_pose_.orientation.y = -0.591028;
     target_pose_.orientation.z = -0.348967;
     target_pose_.orientation.w =  0.368081;
-
-    // // initial
-    // // 0.285026, -0.0202379, 0.316972, 0.690882, 0.703843, 0.093615, 0.136099
-    // target_pose_.position.x = 0.285026;
-    // target_pose_.position.y = -0.0202379;
-    // target_pose_.position.z = 0.316972;
-    // target_pose_.orientation.x = 0.690882;
-    // target_pose_.orientation.y = 0.703843;
-    // target_pose_.orientation.z = 0.093615;
-    // target_pose_.orientation.w = 0.136099;
-
-
-    // // demo for welding
-    // target_pose_.position.x = 0.563152;
-    // target_pose_.position.y = -0.157454 + 0.25;
-    // target_pose_.position.z = 0.160644;
-    // target_pose_.orientation.x = 0.596603;
-    // target_pose_.orientation.y = 0.627089;
-    // target_pose_.orientation.z = 0.352663;
-    // target_pose_.orientation.w = 0.355602;
-
-    // // pre-feeding
-    // target_pose_.position.x = 0.31029;
-    // target_pose_.position.y = -0.00418602;
-    // target_pose_.position.z = 0.261058 + 0.12;
-    // target_pose_.orientation.x = 0.683811;
-    // target_pose_.orientation.y = 0.703735;
-    // target_pose_.orientation.z = 0.128924;
-    // target_pose_.orientation.w = 0.143314;
 
     tf2::Quaternion quaternion;
     quaternion.setX(target_pose_.orientation.x);
@@ -130,13 +65,6 @@ class KortexMotionWidget
   void execute()
   {
     motion_execution_service_.request.motion_plan = motion_plan_response_.motion_plan;
-    // for (int i = 0; i <motion_plan_response_.motion_plan.points.size(); i++)
-    // {
-    //   for (int j = 0; j < DOF; j++)
-    //   {
-    //     std::cout << motion_plan_response_.motion_plan.points[i].positions[j] << std::endl;
-    //   }
-    // }
     if (motion_execution_client_.call(motion_execution_service_))
     {
       ROS_INFO("Succeeded to call kortex motion execution service!");
@@ -181,21 +109,6 @@ int main(int argc, char **argv)
 
   ROS_INFO("Motion planning finished at %s", std::ctime(&end_time_stamp));
   ROS_INFO("Elapsed time for motion planning: %f seconds", elapsed_time.count());
-
-  // ROS_WARN("Please check the motion plan in Rivz!");
-  // int decision;
-  // std::cout << "1 - execute, 0 - abort" <<std::endl;
-  // std::cin >> decision;
-  // if (decision == 1)
-  // {
-  //   std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  //   KMT.execute();
-  //   ROS_INFO("Going to execute motion, attention!");
-  // }
-  // else if (decision == 0)
-  // {
-  //   ROS_INFO("Abort to execute motion plan!");
-  // }
 
   KMT.execute();
 

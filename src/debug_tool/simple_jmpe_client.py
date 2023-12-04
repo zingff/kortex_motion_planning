@@ -17,8 +17,9 @@ if __name__ == '__main__':
     rospy.init_node('kortex_test_client')
 
     # Test joint positions
-    test_positions = [0.0212474, 6.01921-6.28, 3.15111, 4.13476-6.28, 0.0608379, 5.37321-6.28, 1.58046]
-
+    # test_positions = [1.38348, 0.467969, 3.13848, -2.24192, -0.3143, 1.08215, 0.241945]
+    test_positions = [1.38236, 0.466606, 3.09348, 4.05094-6.28, 6.28229, 1.04642, 0.070713]
+    
     rospy.loginfo("Calling kortex_simple_joint_motion_service")
     result = call_kortex_service(test_positions)
     rospy.loginfo("Service response: %s" % result)

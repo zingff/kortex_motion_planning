@@ -1,0 +1,7 @@
+# Request
+float64 gripper_position
+
+---
+
+#Response
+bool success

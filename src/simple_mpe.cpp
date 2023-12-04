@@ -7,6 +7,7 @@ SimpleMpe::SimpleMpe(ros::NodeHandle nh_, std::string planning_group_)
     this->gripper_command_pub_ = nh_.advertise<control_msgs::GripperCommandActionGoal>("robotiq_2f_85_gripper_controller/gripper_cmd/goal", 10);
     this->joint_positions_.resize(7);
     this->display_publisher_ = nh_.advertise<moveit_msgs::DisplayTrajectory>("move_group/display_planned_path", 1, true);
+    this->gripper_cmd_client_ = nh_.serviceClient<kortex_driver::SendGripperCommand>("/base/send_gripper_command");
 }
 
 void SimpleMpe::getCurrentPositions()
@@ -93,8 +94,6 @@ bool SimpleMpe::moveToCartesian(geometry_msgs::Pose target_pose){
         return plan_success;
     }
 
-
-
     moveit::planning_interface::MoveItErrorCode execution_result = this->move_group_ptr_->execute(this->cartesian_motion_plan_);
     ros::Duration(1.0).sleep();
     bool execution_success = false;
@@ -108,16 +107,15 @@ bool SimpleMpe::moveToCartesian(geometry_msgs::Pose target_pose){
 }
 
 
-// modify to service
-void SimpleMpe::goTop()
+void SimpleMpe::moveToFeedingInitialPositions()
 {
     getCurrentPositions();
-    ROS_INFO("Moving to Top Position");
+    ROS_INFO(GREEN "Moving to feeding initial position" RESET);
     setJointGroup(0.0212474, 6.01921-6.28, 3.15111, 4.13476-6.28, 0.0608379, 5.37321-6.28, 1.58046);
     moveToJoint(joint_positions_);
 }
 
-// Gripper Action Commands, TODO: replace with gripper planning group
+// Gripper Action Commands
 void SimpleMpe::closeGripper()
 {
     this->gripper_cmd_.goal.command.position = 0.8;
@@ -131,6 +129,80 @@ void SimpleMpe::openGripper()
     gripper_command_pub_.publish(gripper_cmd_);
     ROS_WARN("Opening gripper...");
 }
+
+void SimpleMpe::sendGripperCommand(double gripper_position_)
+{
+  kortex_driver::Finger finger;
+  kortex_driver::SendGripperCommand send_girpper_command;
+  finger.finger_identifier = 0;
+  finger.value = gripper_position_;
+  send_girpper_command.request.input.gripper.finger.push_back(finger);
+  send_girpper_command.request.input.mode = kortex_driver::GripperMode::GRIPPER_POSITION;
+
+  if (gripper_cmd_client_.call(send_girpper_command))
+  {
+    ROS_INFO(GREEN "Sending gripper command: %f." RESET, gripper_position_);
+  }
+  else
+  {
+    ROS_INFO(RED "Failed to call service SendGripperCommand!");
+  }
+  
+}
+
+bool SimpleMpe::sendKortexGripperCommand(
+  kortex_motion_planning::SendGripperCommandRequest &skgcRequest,
+  kortex_motion_planning::SendGripperCommandResponse &skgcResponse
+)
+{
+  skgcResponse.success = false;
+  double gripper_position;
+  gripper_position = skgcRequest.gripper_position;
+  sendGripperCommand(gripper_position);
+  skgcResponse.success = true;
+}
+
+bool SimpleMpe::getUtensil(
+  kortex_motion_planning::GetUtensilRequest &guRequest,
+  kortex_motion_planning::GetUtensilResponse &guResponse
+)
+{
+  guResponse.success = false;
+  if (guRequest.get_utensil_flag = true)
+  {
+    moveToFeedingInitialPositions();
+    ros::Duration(0.2).sleep();
+    sendGripperCommand(0);
+    ros::Duration(0.2).sleep();
+    ROS_INFO(GREEN "Ready to move to utensil position." RESET);
+    setJointGroup(guRequest.holder_positions.joint_positions[0], 
+                  guRequest.holder_positions.joint_positions[1], 
+                  guRequest.holder_positions.joint_positions[2], 
+                  guRequest.holder_positions.joint_positions[3], 
+                  guRequest.holder_positions.joint_positions[4], 
+                  guRequest.holder_positions.joint_positions[5], 
+                  guRequest.holder_positions.joint_positions[6]
+    );
+    moveToJoint(joint_positions_);
+    ros::Duration(0.5).sleep();
+    sendGripperCommand(1.0);
+    ros::Duration(0.2).sleep();
+    setJointGroup(guRequest.utensil_positions.joint_positions[0], 
+                  guRequest.utensil_positions.joint_positions[1], 
+                  guRequest.utensil_positions.joint_positions[2], 
+                  guRequest.utensil_positions.joint_positions[3], 
+                  guRequest.utensil_positions.joint_positions[4], 
+                  guRequest.utensil_positions.joint_positions[5], 
+                  guRequest.utensil_positions.joint_positions[6]
+    );
+    moveToJoint(joint_positions_);
+    ros::Duration(0.2).sleep();
+    guResponse.success = true;
+  }
+  
+
+}
+
 
 bool SimpleMpe::kortexSimpleJointMotionPlanningAndExecution(
   kortex_motion_planning::KortexSimpleJmpe::Request &ksjmpeRequest,

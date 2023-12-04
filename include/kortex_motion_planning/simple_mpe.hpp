@@ -11,6 +11,10 @@
 #include <string>
 #include <kortex_motion_planning/KortexSimpleJmpe.h>
 #include <kortex_motion_planning/KortexSimpleCmpe.h>
+#include <kortex_motion_planning/SendGripperCommand.h>
+#include <kortex_driver/SendGripperCommand.h>
+#include <kortex_driver/GripperMode.h>
+#include <kortex_motion_planning/GetUtensil.h>
 
 typedef boost::shared_ptr<moveit::planning_interface::MoveGroupInterface> MoveGroupPtr;
 typedef boost::shared_ptr<moveit::planning_interface::PlanningSceneInterface> PlanningScenePtr;
@@ -42,6 +46,8 @@ private:
 public:
   ros::Publisher gripper_command_pub_;
   ros::Publisher display_publisher_;
+  ros::ServiceClient gripper_cmd_client_;
+
 
   SimpleMpe(ros::NodeHandle nh_, std::string planning_group_);
 
@@ -55,6 +61,16 @@ public:
     kortex_motion_planning::KortexSimpleCmpe::Response & kscmpeResponse
   );
 
+  bool sendKortexGripperCommand(
+    kortex_motion_planning::SendGripperCommandRequest &skgcRequest,
+    kortex_motion_planning::SendGripperCommandResponse &skgcResponse
+  );
+
+  bool getUtensil(
+    kortex_motion_planning::GetUtensilRequest &guRequest,
+    kortex_motion_planning::GetUtensilResponse &guResponse
+  );
+
   moveit::core::RobotStatePtr current_state_;
   std::vector<double> joint_positions_;
   std::string planning_group_name_;
@@ -66,7 +82,7 @@ public:
   // todo: move to private
   void getCurrentPositions();
 
-  void goTop();
+  void moveToFeedingInitialPositions();
 
   void sendGripperCommand(double gripper_position_);
   void closeGripper();

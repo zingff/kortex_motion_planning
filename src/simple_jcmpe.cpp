@@ -28,14 +28,29 @@ int main(int argc, char **argv)
       &SimpleMpe::kortexSimpleJointMotionPlanningAndExecution, 
       &simple_mpe
     );
-    ROS_INFO(WHITE "Kortex Simple Joint Motion service initialized!" RESET);
+    ROS_INFO(WHITE "Kortex simple joint motion service initialized!" RESET);
 
     ros::ServiceServer cmpe_service = nh.advertiseService(
       "kortex_simple_cartesian_motion_service",
       &SimpleMpe::kortexSimpleCartesianMotionPlanningAndExecution,
       &simple_mpe
     );
-    ROS_INFO(WHITE "Kortex Simple Cartesian Motion service initialized!" RESET);
+    ROS_INFO(WHITE "Kortex simple Cartesian motion service initialized!" RESET);
+
+    ros::ServiceServer skgc_service = nh.advertiseService(
+      "kortex_gripper_command_service",
+      &SimpleMpe::sendKortexGripperCommand,
+      &simple_mpe
+    );
+    ROS_INFO(WHITE "Kortex gripper command service initialized!" RESET);
+
+
+    ros::ServiceServer gu_service = nh.advertiseService(
+      "kortex_get_utensil_service",
+      &SimpleMpe::getUtensil,
+      &simple_mpe
+    );
+    ROS_INFO(WHITE "Kortex get_utensil service initialized!" RESET);    
 
     ros::waitForShutdown();
     return 0;

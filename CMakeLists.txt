@@ -70,6 +70,8 @@ add_service_files(
   GenerateKortexJointMotionPlan.srv
   KortexSimpleJmpe.srv
   KortexSimpleCmpe.srv
+  SendGripperCommand.srv
+  GetUtensil.srv
 )
 generate_messages(
   DEPENDENCIES
