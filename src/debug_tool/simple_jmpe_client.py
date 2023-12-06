@@ -19,8 +19,9 @@ if __name__ == '__main__':
     # Test joint positions
     # test_positions = [1.38348, 0.467969, 3.13848, -2.24192, -0.3143, 1.08215, 0.241945]
     # test_positions = [1.38236, 0.466606, 3.09348, 4.05094-6.28, 6.28229, 1.04642, 0.070713]  # bowl transfer initial 
-    test_positions = [1.3686876090750437, 0.28184642233856894, 3.144328097731239, 4.023280977312391-6.28, 6.009197207678883, 0.9603996509598605, 1.6590017452006982]  # door open initial
-    
+    # test_positions = [1.3686876090750437, 0.28184642233856894, 3.144328097731239, 4.023280977312391-6.28, 6.009197207678883, 0.9603996509598605, 1.6590017452006982]  # door open initial
+    test_positions = [5.69694, 0.576636, 3.46146, 4.25487-6.28, 0.676436, 6.13939-6.28, 0.537054 ]  # placement place
+        
     rospy.loginfo("Calling kortex_simple_joint_motion_service")
     result = call_kortex_service(test_positions)
     rospy.loginfo("Service response: %s" % result)

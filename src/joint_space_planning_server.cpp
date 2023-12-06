@@ -479,7 +479,6 @@ class PlanningServer
 
   Eigen::VectorXd adjustJointPositions(const Eigen::VectorXd& original_positions) {
       Eigen::VectorXd adjusted_positions = original_positions;
-      std::cout << "gggg" << std::endl;
 
       for (int i = 0; i < DOF; i++) {
           if (i == 1 || i == 3 || i == 5) {

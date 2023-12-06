@@ -17,7 +17,7 @@ if __name__ == '__main__':
     rospy.init_node('kortex_test_client')
 
     # Test position
-    gripper_position = 1
+    gripper_position = 0
     
     rospy.loginfo("Calling kortex_gripper_command_service")
     result = call_kortex_service(gripper_position)

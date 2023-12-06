@@ -33,7 +33,7 @@ static const std::vector<double> TAU_THRESHOLD = {3, 3, 3, 3, 3, 3, 3};
 // static const std::vector<double> TAU_THRESHOLD = {4, 4, 4, 4, 4, 4, 4};
 // static const std::vector<double> TAU_THRESHOLD = {3.4, -3.4};
 
-static const std::string COLLISION_STATUS_MESSAGE_NAME = "/kortex_motion_planning/collision_detection";
+static const std::string COLLISION_STATUS_MESSAGE_NAME = "/fsm/collision_detection";
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
     return (M_PI / 180.0) * degreesVector;

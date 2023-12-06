@@ -308,14 +308,13 @@ target_link_libraries(
 
 
 # simple cmpe
-add_executable(simple_jcmpe
-  src/simple_jcmpe.cpp
-	src/simple_mpe.cpp
+add_executable(get_state
+  src/utilities/get_state.cpp
 )
-target_link_libraries(simple_jcmpe 
+target_link_libraries(get_state 
   ${catkin_LIBRARIES}
 )
-add_dependencies(simple_jcmpe 
+add_dependencies(get_state 
   ${catkin_EXPORTED_TARGETS}
 )
 

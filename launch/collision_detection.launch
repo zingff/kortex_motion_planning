@@ -1,6 +1,6 @@
   <launch>
       <!-- collision detection data saving and real-time visualization -->
-      <group>
+      <group ns="/feeding_task_state_machine">
         <node name="collision_detection" pkg="kortex_motion_planning" type="collision_detection" output="screen">
         </node>
       </group>
