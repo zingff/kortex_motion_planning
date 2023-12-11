@@ -48,23 +48,23 @@ class KortexMotionWidget
     //           << target_quaternion.z() << ", "
     //           << target_quaternion.w() << std::endl;
 
-    // // feeding
-    // target_pose_.position.x = -0.15135;
-    // target_pose_.position.y = 0.235484;
-    // target_pose_.position.z = 0.557796;
-    // target_pose_.orientation.x = 0.3872724;
-    // target_pose_.orientation.y = -0.4914169;
-    // target_pose_.orientation.z = -0.604657;
-    // target_pose_.orientation.w = 0.4928685;
+    // feeding
+    target_pose_.position.x = -0.15135;
+    target_pose_.position.y = 0.235484;
+    target_pose_.position.z = 0.557796;
+    target_pose_.orientation.x = 0.3872724;
+    target_pose_.orientation.y = -0.4914169;
+    target_pose_.orientation.z = -0.604657;
+    target_pose_.orientation.w = 0.4928685;
 
-    // bowl placement 
-    target_pose_.position.x = 0.420817;
-    target_pose_.position.y = -0.142423;
-    target_pose_.position.z = 0.151256;
-    target_pose_.orientation.x = -0.627236;
-    target_pose_.orientation.y = -0.591028;
-    target_pose_.orientation.z = -0.348967;
-    target_pose_.orientation.w =  0.368081;
+    // // bowl placement 
+    // target_pose_.position.x = 0.420817;
+    // target_pose_.position.y = -0.142423;
+    // target_pose_.position.z = 0.151256;
+    // target_pose_.orientation.x = -0.627236;
+    // target_pose_.orientation.y = -0.591028;
+    // target_pose_.orientation.z = -0.348967;
+    // target_pose_.orientation.w =  0.368081;
 
     // // initial
     // // 0.285026, -0.0202379, 0.316972, 0.690882, 0.703843, 0.093615, 0.136099

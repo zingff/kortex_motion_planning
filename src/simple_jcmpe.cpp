@@ -52,6 +52,13 @@ int main(int argc, char **argv)
     );
     ROS_INFO(WHITE "Kortex get_utensil service initialized!" RESET);    
 
+    ros::ServiceServer usa_service = nh.advertiseService(
+      "kortex_upright_skewer_action_service",
+      &SimpleMpe::uprightSkewerAction,
+      &simple_mpe
+    );
+    ROS_INFO(WHITE "Kortex upright_skewer service initialized!" RESET);  
+
     ros::waitForShutdown();
     return 0;
 }

@@ -12,6 +12,7 @@
 #include <std_msgs/Bool.h>
 #include <QApplication>
 #include "qcustomplot.h"
+#include <kortex_motion_planning/ros_utilities.hpp>
 
 #ifndef KORTEX_CONFIG_DIR
   #define KORTEX_CONFIG_DIR "/home/zing/mealAssistiveRobot/sla_ws/src/kortex_motion_planning/config"
@@ -20,7 +21,7 @@
 #define RESET   "\033[0m"
 #define RED     "\033[1;31m"
 #define GREEN   "\033[1;32m"
-#define YELLOW   "\033[1;33m"
+#define YELLOW  "\033[1;38;5;228m"
 #define CYAN   "\033[1;38;5;123m"
 
 
@@ -33,7 +34,8 @@ static const std::vector<double> TAU_THRESHOLD = {3, 3, 3, 3, 3, 3, 3};
 // static const std::vector<double> TAU_THRESHOLD = {4, 4, 4, 4, 4, 4, 4};
 // static const std::vector<double> TAU_THRESHOLD = {3.4, -3.4};
 
-static const std::string COLLISION_STATUS_MESSAGE_NAME = "/fsm/collision_detection";
+static const std::string COLLISION_STATUS_MESSAGE_NAME = "/fsm/collision_status";
+static const std::string COLLISION_STATUS_MESSAGE_NAME_PRO = "/fsm/collision_status_pro";
 
 Eigen::VectorXd degreesToRadians(const Eigen::VectorXd& degreesVector) {
     return (M_PI / 180.0) * degreesVector;
@@ -50,7 +52,13 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "collision_detection");
     ros::NodeHandle nh;
     ros::Publisher collision_status_pub = nh.advertise<std_msgs::Bool>(COLLISION_STATUS_MESSAGE_NAME, 10);
-
+    ros::Publisher collision_status_pro_pub = nh.advertise<std_msgs::Bool>(COLLISION_STATUS_MESSAGE_NAME_PRO, 10);
+    // 20231208 go to nanjing tomorrow, so working overtime now
+    // 20231208 anyway, the evil lab is warm at least
+    std::vector<double> basic_tau_threshold(7, 0.0);
+    std::vector<double> tau_threshold_pro(7, 0.0);
+    getROSParam(nh, "/collisionDetection/basicTorqueThreshold", basic_tau_threshold);
+    getROSParam(nh, "/collisionDetection/torqueThresholdPro", tau_threshold_pro);
     QApplication app(argc, argv);
 
     // for (auto& value : TAU_BASE) {
@@ -180,9 +188,9 @@ int main(int argc, char** argv)
 
       for (size_t i = 0; i < delta_tau.size(); i++)
       {
-          if (std::abs(delta_tau(i) > std::abs(TAU_THRESHOLD.at(i))))
+          if (std::abs(delta_tau(i) > std::abs(basic_tau_threshold.at(i))))
           {
-              ROS_INFO(YELLOW "Excessive joint torque detected! Stopping!" RESET);
+              ROS_INFO(CYAN "Excessive joint torque detected! Watch out!" RESET);
               
               if (!collision_detected)
               {
@@ -216,6 +224,49 @@ int main(int argc, char** argv)
           {
               collision_status_pub.publish(collision_state);
           }
+
+      // Check for excessive joint torque
+      std_msgs::Bool collision_state_pro;
+      collision_state_pro.data = false;
+      bool collision_pro_detected = false;
+
+          if (std::abs(delta_tau(i) > std::abs(tau_threshold_pro.at(i))))
+          {
+              ROS_INFO(YELLOW "Pro joint torque detected! Watch out!" RESET);
+              
+              if (!collision_pro_detected)
+              {
+                  collision_state_pro.data = true;
+                  collision_pro_detected = true;
+                  ros::Time start_time = ros::Time::now();
+                  collision_status_pro_pub.publish(collision_state_pro);
+
+                  ROS_INFO(YELLOW "Delta tau: " RESET);
+                  ROS_INFO_STREAM(YELLOW << delta_tau.transpose() << RESET);
+
+                  // if (true)
+                  // // if (stop_client.call(stop_action))
+                  // {
+                  //   ROS_INFO(GREEN "Succeeded to Stop!" RESET);
+                  // }
+                  // else
+                  // {
+                  //   ROS_INFO(RED "Failed to stop! Press emergency stop!" RESET);
+                  // }         
+
+              }
+          }
+          else if (collision_pro_detected)
+          {
+              collision_state_pro.data = false;
+              collision_pro_detected = false;
+          }
+
+          if (!collision_pro_detected)
+          {
+              collision_status_pro_pub.publish(collision_state_pro);
+          }
+
       }
       ros::spinOnce();
 
@@ -282,3 +333,4 @@ int main(int argc, char** argv)
     }
     return 0;
 }
+

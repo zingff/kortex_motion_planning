@@ -72,6 +72,7 @@ add_service_files(
   KortexSimpleCmpe.srv
   SendGripperCommand.srv
   GetUtensil.srv
+  UprightSkewerAction.srv
 )
 generate_messages(
   DEPENDENCIES
@@ -262,6 +263,7 @@ message("Pinocchio library dirs: ${pinocchio_LIBRARY_DIRS}")
 link_directories(${PINOCCHIO_LIB_DIRS}) # libpinocchio
 add_executable(collision_detection 
   src/collision_detection/collision_detection.cpp
+  src/utilities/ros_utilities.cpp
 )
 target_link_libraries(
   collision_detection
@@ -295,19 +297,22 @@ target_link_libraries(
   pinocchio
 )
 
-# # simple jmpe
-# add_executable(simple_jmpe
-# 	src/simple_jmpe.cpp
-# )
-# target_link_libraries(simple_jmpe 
-#   ${catkin_LIBRARIES}
-# )
-# add_dependencies(simple_jmpe 
-#   ${catkin_EXPORTED_TARGETS}
-# )
-
 
 # simple cmpe
+add_executable(simple_jcmpe
+  src/simple_jcmpe.cpp
+	src/simple_mpe.cpp
+  src/utilities/ros_utilities.cpp
+)
+target_link_libraries(simple_jcmpe 
+  ${catkin_LIBRARIES}
+)
+add_dependencies(simple_jcmpe 
+  ${catkin_EXPORTED_TARGETS}
+)
+
+
+# get state
 add_executable(get_state
   src/utilities/get_state.cpp
 )
@@ -318,6 +323,17 @@ add_dependencies(get_state
   ${catkin_EXPORTED_TARGETS}
 )
 
+
+# wrench sensing
+add_executable(wrench_feedback
+  src/wrench_sensing.cpp
+)
+target_link_libraries(wrench_feedback 
+  ${catkin_LIBRARIES}
+)
+add_dependencies(wrench_feedback 
+  ${catkin_EXPORTED_TARGETS}
+)
 
 
 #####################################

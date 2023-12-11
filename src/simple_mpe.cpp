@@ -7,7 +7,22 @@ SimpleMpe::SimpleMpe(ros::NodeHandle nh_, std::string planning_group_)
     this->gripper_command_pub_ = nh_.advertise<control_msgs::GripperCommandActionGoal>("robotiq_2f_85_gripper_controller/gripper_cmd/goal", 10);
     this->joint_positions_.resize(7);
     this->display_publisher_ = nh_.advertise<moveit_msgs::DisplayTrajectory>("move_group/display_planned_path", 1, true);
+    twist_force_z_publisher_ = nh_.advertise<std_msgs::Float64>("/wrench_force_z", 10);
     this->gripper_cmd_client_ = nh_.serviceClient<kortex_driver::SendGripperCommand>("/base/send_gripper_command");
+    this->twist_command_client_ = nh_.serviceClient<kortex_driver::SendTwistCommand>("/base/send_twist_command");
+    getROSParam(nh_, "/foodSkewer/uprightSkewerTwist", upright_skewer_twist_);
+    getROSParam(nh_, "/foodSkewer/zeroSkewerTwist", zero_twist_);
+    getROSParam(nh_, "/foodSkewer/lpfCoefficient", lpf_coefficient_);
+    getROSParam(nh_, "/foodSkewer/wrenchForceZThreshold", wrench_force_z_threshold_);
+    getROSParam(nh_, "/kortex/service/sendGripperCommand", send_gripper_command_service_);
+    getROSParam(nh_, "/kortex/service/sendTwistCommand", send_twist_command_service_);
+    getROSParam(nh_, "/kortex/topic/baseCyclicFeedback", base_cyclic_feedback_topic_);
+    getROSParam(nh_, "/kortex/config/baseFrame", reference_frame_);
+    getROSParam(nh_, "/rosConfig/simpleCMPEConfig/goalPositionTorlerance", goal_position_tolerance_);
+    getROSParam(nh_, "/rosConfig/simpleCMPEConfig/planningAttemptsNumber", planning_attempts_number_);
+    getROSParam(nh_, "/rosConfig/simpleCMPEConfig/planningTime", planning_time_);
+    getROSParam(nh_, "/rosConfig/simpleCMPEConfig/goalOrientationTorlerance", goal_orientation_tolerance_);
+
 }
 
 void SimpleMpe::getCurrentPositions()
@@ -83,10 +98,10 @@ void SimpleMpe::setJointGroup(double joint_0,
 
 bool SimpleMpe::moveToCartesian(geometry_msgs::Pose target_pose){
     this->move_group_ptr_->setPoseTarget(target_pose);
-    this->move_group_ptr_->setGoalPositionTolerance(0.01);
-    this->move_group_ptr_->setGoalOrientationTolerance(0.02);
-    this->move_group_ptr_->setPlanningTime(5.0);
-    this->move_group_ptr_->setNumPlanningAttempts(5);
+    this->move_group_ptr_->setGoalPositionTolerance(goal_position_tolerance_);
+    this->move_group_ptr_->setGoalOrientationTolerance(goal_orientation_tolerance_);
+    this->move_group_ptr_->setPlanningTime(planning_time_);
+    this->move_group_ptr_->setNumPlanningAttempts(planning_attempts_number_);
 
     bool plan_success = (this->move_group_ptr_->plan(this->cartesian_motion_plan_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     if (!plan_success) {
@@ -199,8 +214,6 @@ bool SimpleMpe::getUtensil(
     ros::Duration(0.2).sleep();
     guResponse.success = true;
   }
-  
-
 }
 
 
@@ -245,4 +258,41 @@ bool SimpleMpe::kortexSimpleCartesianMotionPlanningAndExecution(
   }
   kscmpeResponse.success = success;
   return success;
+}
+
+bool SimpleMpe::uprightSkewerAction(
+  kortex_motion_planning::UprightSkewerActionRequest &usaRequest,
+  kortex_motion_planning::UprightSkewerActionResponse &usaResponse
+)
+{
+  usaResponse.success = false;
+  double current_wrench_force_z = 0;
+  double previous_wrench_force_z = 0;
+  double delta_wrench_force_z = 0;
+  bool success = false;
+  if (usaRequest.skewer_action_flag == true)
+  {
+    int i = 0;
+    twistCommand(upright_skewer_twist_, reference_frame_);
+    while (ros::ok())
+    {
+      auto feedback = ros::topic::waitForMessage<kortex_driver::BaseCyclic_Feedback>("/base_feedback");
+      current_wrench_force_z = lpf_coefficient_*feedback->base.tool_external_wrench_force_z + (1 - lpf_coefficient_) * previous_wrench_force_z;
+      delta_wrench_force_z = std::abs(current_wrench_force_z - previous_wrench_force_z);
+      previous_wrench_force_z = current_wrench_force_z;
+      i++;
+      ROS_INFO(WHITE "Wrench force Z: %f" RESET, current_wrench_force_z);
+
+      if ((current_wrench_force_z >= wrench_force_z_threshold_) && (i>2))
+      {
+        ROS_INFO(YELLOW "Reached the threshold of the skewer force!" RESET);
+        twistCommand(zero_twist_, reference_frame_);
+        usaResponse.success = true;
+        break;
+      }
+      ros::spinOnce();
+    }
+    
+  }
+  return usaResponse.success;
 }

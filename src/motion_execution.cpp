@@ -28,8 +28,9 @@ class MotionExecutionServer
   }
 
   // Note: callback should be bool
-  bool executionMotionPlan (kortex_motion_planning::ExecuteMotionPlan::Request &empRequest,
-  kortex_motion_planning::ExecuteMotionPlan::Response &empResponse)
+  bool executionMotionPlan (
+    kortex_motion_planning::ExecuteMotionPlan::Request &empRequest,
+    kortex_motion_planning::ExecuteMotionPlan::Response &empResponse)
   {
     try
     {

@@ -513,7 +513,7 @@ int main(int argc, char** argv)
 }
 
 
-// TODO: modify to the following: 
+// TODO: modify to the following: suanle
 // #include <kortex_motion_planning/planning_server.h> 
 // #include <kortex_motion_planning/gen3_motion_planner.h> 
 // #include <ros/ros.h>
