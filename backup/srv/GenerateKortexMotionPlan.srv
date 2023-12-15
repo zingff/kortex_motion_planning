@@ -1,0 +1,10 @@
+# Request
+geometry_msgs/Pose target_pose
+
+---
+
+#Response
+trajectory_msgs/JointTrajectory motion_plan
+bool success
+string message
+

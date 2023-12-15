@@ -1,0 +1,9 @@
+  <launch>
+      <node name="kortex_motion_execution_node" pkg="kortex_motion_planning" type="kortex_motion_execution_node"  output="screen">
+      </node>
+<!-- 
+      <node name="kortex_motion_execution_node" pkg="kortex_motion_planning" type="kortex_motion_execution_node" output="screen">
+        <param name="log_level" type="string" value="DEBUG" />
+      </node> -->
+
+  </launch>
