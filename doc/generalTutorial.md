@@ -525,10 +525,8 @@ In this way you will create a pre-configured virtual environment, ensuring no ve
 
 ### Some links
 
-- [apriltag_ros]: https://github.com/AprilRobotics/apriltag_ros	"apriltag_ros"
-
-- [Tesseract]: https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html	"Getting start - Tesseract"
-
+- [**apriltag_ros**](https://github.com/AprilRobotics/apriltag_ros)
+- [**Tesseract**](https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html)
 - [**Pinocchio**](https://github.com/stack-of-tasks/pinocchio)
 
 ### Build Steps (updated 20230605)
