@@ -89,6 +89,8 @@ All of those packages can be download at [zingff](https://github.com/zingff).  Y
 
 2. install `python3-catkin-tools`
 
+Other general steps for build a ROS catkin workspace (`init`, `rosdep`, `wstool` etc,.) are to be omitted in this tutorial.
+
 ### Recommended build procedure (update 20231220)
 
 You can build the workspace in the following order. Or you can build the whole workspace one-off, but I never try.
@@ -139,13 +141,23 @@ You can build the workspace in the following order. Or you can build the whole w
 
    door_open_task admittance_controller_d
 
-10. kortex_motion_planning 
+10. grasp generation
+
+    anygrasp_generation
+
+11. object_grasping 
+
+    gpd_pick_and_place
+
+12. motion planning
+
+    kortex_motion_planning 
 
     Note: install `qcustomplot` first, also build `srv` first
 
-11. grasp generation and task-level packages
+13. task-level package
 
-    anygrasp_generation feeding_task object_grasping (gpd_pick_and_place)
+    feeding_task
 
 10. pinocchio (ahead, skip)
 
@@ -157,10 +169,15 @@ You can build the workspace in the following order. Or you can build the whole w
 
     kortex_utilities (deprecated)
 
-
     object_detection (deprecated)
 
+### Slave diary
+
+20231220: prof. zhang learned a lot in Singapore, and shows off every corner of the lab. funny huckster... prof. chen proposes the framework for my paper hhhhh, jile? fanzheng wo buji.
+
 ## Previous build instructions 
+
+Those instruction are out of date, deprecated.
 
 ### History build procedure (last update 20231001)
 
@@ -281,6 +298,15 @@ note:
 catkin config --skiplist apriltag pinocchio ifopt ros_industrial_cmake_boilerplate descartes_light osqp osqp_eigen ruckig tesseract_common tesseract_command_language tesseract_msgs tesseract_support tesseract_scene_graph tesseract_collision tesseract_srdf tesseract_time_parameterization tesseract_urdf tesseract_state_solver tesseract_kinematics tesseract_environment tesseract_visualization trajopt_utils trajopt_sco trajopt trajopt_ifopt trajopt_sqp tesseract_motion_planners tesseract_task_composer tesseract_examples tesseract_qt tesseract_rosutils tesseract_monitoring tesseract_planning_server tesseract_ros_examples tesseract_rviz vhacd geometry2 tf2_msgs tf2 tf2_bullet tf2_eigen tf2_py tf2_ros tf2_geometry_msgs tf2_kdl test_tf2 tf2_sensor_msgs tf2_tools
 
 ```
+
+### Build Steps (updated 20230605)
+
+- conda deactivate
+- build apriltag
+- build apriltag_ros
+- build ros_kortex and tesseract
+- build kortex_motion_planning
+- build sla_feeding
 
 ### Build steps (update 20230512)
 
@@ -528,20 +554,6 @@ In this way you will create a pre-configured virtual environment, ensuring no ve
 - [**apriltag_ros**](https://github.com/AprilRobotics/apriltag_ros)
 - [**Tesseract**](https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html)
 - [**Pinocchio**](https://github.com/stack-of-tasks/pinocchio)
-
-### Build Steps (updated 20230605)
-
-- conda deactivate
-- build apriltag
-- build apriltag_ros
-- build ros_kortex and tesseract
-- build kortex_motion_planning
-- build sla_feeding
-
-
-### Other instructions
-
-- 
 
 # Packages
 
