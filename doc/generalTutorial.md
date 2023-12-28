@@ -175,6 +175,10 @@ You can build the workspace in the following order. Or you can build the whole w
 
 20231220: prof. zhang learned a lot in Singapore, and shows off every corner of the lab. funny huckster... prof. chen proposes the framework for my paper hhhhh, jile? fanzheng wo buji.
 
+20231225：什么都不会还能当教授，这辈子算是开了眼了，此生无憾。
+
+20231226：陈老师今天上午又来实验室作遗言宣告，像领导视察工作，每个人都要说两句，是怕活不到明天了吗？
+
 ## Previous build instructions 
 
 Those instruction are out of date, deprecated.
@@ -413,10 +417,10 @@ Most of the building issues are due to version conflicts among packages.
 Those combinations are tested.
 
 - `cuda11.0`,  `python 3.6`with trash low performance GPU `GeForce 1660Ti`
-
 - `cuda11.0`, `python 3.8`, with trash low performance GPU `GeForce 1660Ti`
-
 - `cuda11.1`, `python 3.8`, with `RTX A2000 Laptop`
+
+Please note that using AnyGrasp for grasp generation consumes approximately 1.6GB of GPU memory, as tested on an RTX A2000 with 4GB of memory. You can decrease the resolution of the screen or close VScode, Typora, Google Chrome, etc,. to reduce the usage of GPU.
 
 ##### Shortcut
 
@@ -549,11 +553,110 @@ In this way you will create a pre-configured virtual environment, ensuring no ve
 
    in your terminal before you build `MinkowskiEngine` or `anygrasp_sdk`.
 
+4. Memory issues
+
+   ```bash
+   RuntimeError: CUDA error: out of memory
+   ```
+
+   or (not very sure, but it should be)
+
+   ```bash
+   Error from AnyGrasp server:  CUDA error: CUBLAS_STATUS_NOT_INITIALIZED when calling `cublasCreate(handle)`
+   ```
+
+   or
+
+   ```bash
+   Error from AnyGrasp server:  CUDA out of memory. Tried to allocate 28.00 MiB (GPU 0; 3.78 GiB total capacity; 319.96 MiB already allocated; 91.00 MiB free; 334.00 MiB reserved in total by PyTorch)
+   ```
+
+   
+
 ### Some links
 
 - [**apriltag_ros**](https://github.com/AprilRobotics/apriltag_ros)
 - [**Tesseract**](https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html)
 - [**Pinocchio**](https://github.com/stack-of-tasks/pinocchio)
+
+# GPT-SAM Grasping
+
+## Issues: 
+
+1. for create the conda env with voice module:
+
+```bash
+Pip subprocess error:
+  error: subprocess-exited-with-error
+  
+  × Building wheel for pyaudio (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [18 lines of output]
+      running bdist_wheel
+      running build
+      running build_py
+      creating build
+      creating build/lib.linux-x86_64-cpython-38
+      creating build/lib.linux-x86_64-cpython-38/pyaudio
+      copying src/pyaudio/__init__.py -> build/lib.linux-x86_64-cpython-38/pyaudio
+      running build_ext
+      building 'pyaudio._portaudio' extension
+      creating build/temp.linux-x86_64-cpython-38
+      creating build/temp.linux-x86_64-cpython-38/src
+      creating build/temp.linux-x86_64-cpython-38/src/pyaudio
+      gcc -pthread -B /home/zing/anaconda3/envs/ai/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I/usr/local/include -I/usr/include -I/home/zing/anaconda3/envs/ai/include/python3.8 -c src/pyaudio/device_api.c -o build/temp.linux-x86_64-cpython-38/src/pyaudio/device_api.o
+      src/pyaudio/device_api.c:9:10: fatal error: portaudio.h: No such file or directory
+          9 | #include "portaudio.h"
+            |          ^~~~~~~~~~~~~
+      compilation terminated.
+      error: command '/usr/bin/gcc' failed with exit code 1
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for pyaudio
+ERROR: Could not build wheels for pyaudio, which is required to install pyproject.toml-based projects
+
+failed
+
+CondaEnvException: Pip failed
+```
+
+try:
+
+```bash
+sudo apt install portaudio19-dev 
+```
+
+2. In a new venv run `yolo_sam_class`:
+
+```bash
+(sam) zing@zing-p15:~/mealAssistiveRobot/sla_ws/src/Grounded-Segment-Anything/yolo_sam/src$ python yolo_sam_class.py 
+loading Roboflow workspace...
+loading Roboflow project...
+ROS Initialization done
+Processing image...
+Traceback (most recent call last):
+  File "yolo_sam_class.py", line 251, in <module>
+    processor.process_image()
+  File "yolo_sam_class.py", line 78, in process_image
+    image_np = self.bridge.imgmsg_to_cv2(self.raw_img, desired_encoding="bgr8")
+  File "/opt/ros/noetic/lib/python3/dist-packages/cv_bridge/core.py", line 163, in imgmsg_to_cv2
+    dtype, n_channels = self.encoding_to_dtype_with_channels(img_msg.encoding)
+  File "/opt/ros/noetic/lib/python3/dist-packages/cv_bridge/core.py", line 99, in encoding_to_dtype_with_channels
+    return self.cvtype2_to_dtype_with_channels(self.encoding_to_cvtype2(encoding))
+  File "/opt/ros/noetic/lib/python3/dist-packages/cv_bridge/core.py", line 91, in encoding_to_cvtype2
+    from cv_bridge.boost.cv_bridge_boost import getCvType
+ImportError: /lib/x86_64-linux-gnu/libp11-kit.so.0: undefined symbol: ffi_type_pointer, version LIBFFI_BASE_7.0
+
+```
+
+try:
+
+```
+rm ${CONDA_PREFIX}/lib/libffi.7.so ${CONDA_PREFIX}/lib/libffi.so.7 
+```
+
+The problem is that those libs are dynamically linked to libffi8, which is incorrect. See [link](https://stackoverflow.com/questions/75045632/apt-update-failed-libp11-kit-so-0-undefined-symbol-ffi-type-pointer-version).
 
 # Packages
 
@@ -1038,7 +1141,7 @@ General process to connect the robot via `Ethernet`:
   - Settings -> Network -> Wired -> `Setting icon` -> IPv4
   - Shift the `IPv4 Method` to `Manual`
   - Configurations:
-    * Address: `192.168.1.6`, the port should aviod the arm's one, thus not be `192.168.1.1` or `192.168.1.10`(perhaps the latter one is the defautlt address of the robot)
+    * Address: `192.168.1.6`, the port should aviod the arm's one, thus not be `192.168.1.1` or `192.168.1.10`(perhaps those two are the addresses of the robot and the web.)
     * Netmask: `255.255.255.0` or `24`
   - In browser, switch to `192.168.1.10` and you can assess the `KINOVA ® KORTEX™ Web App`.
   - If the connection is configured correctly, the Web application should launch and present a login window. Enter the following credentials:
