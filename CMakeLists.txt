@@ -92,6 +92,10 @@ catkin_package(
   moveit_ros_planning_interface
 )
 
+#####################################
+########## FUNCTIONAL PART ##########
+#####################################
+
 # Gripper command
 add_executable(gripper_command 
   src/utilities/gripper_command.cpp
@@ -297,7 +301,6 @@ target_link_libraries(
   pinocchio
 )
 
-
 # simple cmpe
 add_executable(simple_jcmpe
   src/simple_jcmpe.cpp
@@ -311,7 +314,6 @@ add_dependencies(simple_jcmpe
   ${catkin_EXPORTED_TARGETS}
 )
 
-
 # get state
 add_executable(get_state
   src/utilities/get_state.cpp
@@ -322,7 +324,6 @@ target_link_libraries(get_state
 add_dependencies(get_state 
   ${catkin_EXPORTED_TARGETS}
 )
-
 
 # wrench sensing
 add_executable(wrench_feedback

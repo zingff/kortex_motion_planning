@@ -1,12 +1,26 @@
 # Workspace Setup
 
-## Build instrctions
+## Build instructions
+
+> last update: 20240123
+
+### Requirements
+
+This part shows the requirements you could/should configure first before you build the `feeding task` workspace.
+
+1. Ubuntu: 20.04 LTS
+2. Nvidia driver: 535 or other suitable version
+3. cuda: 11.1/11.0
+4. anaconda: any version
+5. ROS: noetic
+
+
 
 > last update: 20231219
 
 ### Package list (catkin list)
 
-All of those packages can be download at [zingff](https://github.com/zingff).  You can take a glimpse at the following list to know what each package is for. Note that most packages have their official website and updated release, but some of their source code is modified due to my custom usage (marked in **blod**), so it is recommended to download all those packages from my [GitHub account](https://github.com/zingff) unless you know exactly what you are doing. Any package with a different version (especially `tesseract`-related packages) would potentially lead to unknown error and build failure. I will list the official GitHub for those third-party packages. Custom packages are in *Italic*.
+All of those packages can be download at [zingff](https://github.com/zingff).  You can take a glimpse at the following list to know what each package is for (see in this [part](###Recommended build procedure (update 20240124))). Note that most packages have their official website and updated release, but some of their source code is modified due to my custom usage (marked in **blod**), so it is recommended to download all those packages from my [GitHub account](https://github.com/zingff) unless you know exactly what you are doing. Any package with a different version (especially `tesseract`-related packages) would potentially lead to unknown error and build failure. I will list the official GitHub for those third-party packages. Custom packages are in *Italic*.
 
 1. *anygrasp_generation*
 2. apriltag
@@ -82,94 +96,172 @@ All of those packages can be download at [zingff](https://github.com/zingff).  Y
 72. vhacd
 73. *yolo_sam*
 
+### How to download those repos from github via SSH
+
+1. Configure your github account locally, see [tutorial](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+
+   ```bash
+   git config --global user.name wdsb
+   git config --global user.email wdsb@arl.com
+   ssh-keygen -t ed25519 -C wdsb@arl.com
+   eval "$(ssh-agent -s)"
+   ssh-add ~/.ssh/id_ed25519
+   cat ~/.ssh/id_ed25519.pub  # then add a ssh key
+   ssh -T git@github.com  # for test
+   ```
+
+2. Run `download_repos.sh`. or use a `wstool` method (recommended):
+
+   ```bash
+   cd ~/mealAssistiveRobot/sla_ws/src
+   git clone https://github.com/zingff/sla_feeding_rosinstalls
+   wstool init # exclude if already have .rosinstall
+   wstool merge ~/mealAssistiveRobot/sla_ws/src/sla_rosinstalls/sla_feeding.ssh.rosinstall
+   wstool up
+   ```
+
+   After all repositories cloned successfully, you can begin to build the workspace for feeding task.
+
 ### Build setup
 
-1. Additional CMake Args: (not necessary, skip)
+1. **OPTIONAL**: additional cmake args: (skip)
    `-DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 -DPYTHON_LIBRARY_DIR=/usr/lib/x86_64-linux-gnu`
 
-2. install `python3-catkin-tools`
+2. **BUILDING TOOL**: install `python3-catkin-tools`, or you can use `catkin_make`.
 
-Other general steps for build a ROS catkin workspace (`init`, `rosdep`, `wstool` etc,.) are to be omitted in this tutorial.
+3. **DEPENDENCIES**: make sure all deps are satisfied before building.
 
-### Recommended build procedure (update 20231220)
+Other general steps for building a ROS catkin workspace (such as `rosdep`, `wstool` etc,.) are to be omitted in this tutorial.
 
-You can build the workspace in the following order. Or you can build the whole workspace one-off, but I never try.
+### Recommended build procedure (update 20240124)
 
-1. apriltag
+> last update: 20240124
+
+> last update: 20231220
+
+You can build the workspace following the following order. Or you can build the whole workspace one-off, but I never try.
+
+1. `apriltag`: pose estimation for QR code
 
    apriltag, apriltag_ros
 
    Note: then skiplist apriltag
 
-2. pinocchio
+2. `pinocchio`: dynamic modeling and computation
 
    pinocchio
 
    Note: then skiplist pinocchio
 
+   Note: 1 and 2 are exchangeable.
+
    Todo: take care of the source code, modify gitignore
 
-3. ros_kortex
+3. `ros_kortex`: ros package for interacting with Kinova Gen3, just pay attention to `kortex_driver`. Note that `kortex_driver` is modified for some custom reason, do not use the [official version](https://github.com/Kinovarobotics/ros_kortex) since it may not be compatible with the feeding-related codes.
+
+   see [how to build](https://github.com/Kinovarobotics/ros_kortex#build):
+
+   ```bash
+   sudo apt install python3 python3-pip
+   sudo python3 -m pip install conan==1.59
+   conan config set general.revisions_enabled=1
+   conan profile new default --detect > /dev/null
+   conan profile update settings.compiler.libcxx=libstdc++11 default
+   mkdir -p catkin_workspace/src
+   cd mealAssistiveRobot/sla_ws
+   rosdep install --from-paths src --ignore-src -y -r  # recommend to run this line at very beginning
+   ```
 
    gazebo_version_helpers gazebo_grasp_plugin kortex_control kortex_description gen3_lite_gen3_lite_2f_move_it_config gen3_move_it_config gen3_robotiq_2f_140_move_it_config gen3_robotiq_2f_85_move_it_config kortex_driver kortex_examples kortex_gazebo kortex_move_it_config roboticsgroup_upatras_gazebo_plugins
 
-4. geometry2
+4. `geometry2`: to shield some incessant TF warnings
 
    geometry2 tf2_msgs tf2 tf2_bullet tf2_eigen tf2_py tf2_ros tf2_geometry_msgs tf2_kdl test_tf2 tf2_sensor_msgs tf2_tools
 
-5. tesseract
+5. `tesseract`: libraries for motion planning
+
+   If any error occurs, see [official tutorial](https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html).
 
    ifopt ros_industrial_cmake_boilerplate descartes_light osqp osqp_eigen ruckig tesseract_common tesseract_command_language tesseract_msgs tesseract_support tesseract_scene_graph tesseract_collision tesseract_srdf tesseract_time_parameterization tesseract_urdf tesseract_state_solver tesseract_kinematics tesseract_environment tesseract_visualization trajopt_utils trajopt_sco trajopt trajopt_ifopt trajopt_sqp tesseract_motion_planners tesseract_task_composer tesseract_examples tesseract_qt tesseract_rosutils tesseract_monitoring tesseract_planning_server tesseract_ros_examples tesseract_rviz vhacd 
 
-6. ros_kortex_vision
+6. `ros_kortex_vision`: for utilizing depth and color streams from Kinova Gen3
 
    kinova_vision
 
-7. face_detection
+7. `face_detection`: for face detection and mouth pose estimation based on `dlib`
 
    face_detection
 
-   Note: install dlib first, recommend to install with source code.
+   ```bash
+   mkdir build
+   cd build/
+   cmake ..
+   cmake --build . --config Release
+   make -j16
+   make install
+   ```
 
-8. pr_assets
+   Note: install [dlib](http://dlib.net/compile.html) first, recommend to install with source code. 19.24 is tested.
+
+   Note: 6 and 7 are exchangeable.
+
+8. `pr_assets`: include some useful assets.
 
    pr_assets
 
-   Note: optional
+   Note: this package is optional
 
-9. door_open
+9. `door_open`: open door with admittance controller
 
    door_open_task admittance_controller_d
 
-10. grasp generation
+10. `grasp generation`: generate grasps for any objects
 
     anygrasp_generation
 
-11. object_grasping 
+11. `object_grasping`: for object grasping, independent of feeding task. ignore. 
 
     gpd_pick_and_place
 
-12. motion planning
+12. `motion planning`: formulate optimization problem based on `tesseract`; execute motion after solving the problem; real-time collision detection; other functional modules used in feeding task.
 
     kortex_motion_planning 
 
-    Note: install `qcustomplot` first, also build `srv` first
+    Note: install `qcustomplot` first, ignore, fixed
 
-13. task-level package
+    Note: build `srv` first
+
+    Todo: modify to one-off build.
+
+13. `task-level package`: most focuses on task manager for feeding task, a finite state machine is empolyed; voice module is to be implemented within this package.
 
     feeding_task
 
-10. pinocchio (ahead, skip)
+14. ~~pinocchio (ahead, skip)~~
 
-11. rest (skip)
-    darknet_ros (not used yet)
-    segment_anything (deprecated)
-    Grounded-Segment-Anything (python only)
-    sla_feeding (deprecated)
+15. ~~rest (skip)~~
+    ~~darknet_ros (not used yet)~~
+    ~~segment_anything (deprecated)~~
+    ~~Grounded-Segment-Anything (python only)~~
+    ~~sla_feeding (deprecated)~~
 
-    kortex_utilities (deprecated)
+    ~~kortex_utilities (deprecated)~~
 
-    object_detection (deprecated)
+    ~~object_detection (deprecated)~~
+
+After build the workspace, some tips for convenience:
+
+1. run
+
+```
+ln -s mealAssistiveRobot/sla_ws/src/feeding_task/bash ~/bash
+```
+
+2. add source file in `.bashrc`.
+3. create several conda virtual environments, see [AnyGrasp](###AnyGrasp).
+   1. anygrasp: if you want to use AnyGrasp for grasp generation
+   2. sam: if you want to use Segment Anything for object segmentation.
+
 
 ### Slave diary
 
@@ -179,11 +271,15 @@ You can build the workspace in the following order. Or you can build the whole w
 
 20231226：陈老师今天上午又来实验室作遗言宣告，像领导视察工作，每个人都要说两句，是怕活不到明天了吗？
 
-## Previous build instructions 
+20240123：真是无语，之前cwd一直拖着我不让我去医院做实验，昨天开足会索尼一说要给24年合作的60w这沙比就松口了，让我年前去医院做实验，我看他是想钱想疯了。
 
-Those instruction are out of date, deprecated.
+20240124: meet ugly guy when peeing.....真晦气
 
-### History build procedure (last update 20231001)
+## Previous build instructions
+
+Those instruction are out of date, deprecated. for reference only.
+
+### Build Steps (last update 20231001)
 
 > last build: 20230512
 >
@@ -247,8 +343,6 @@ $ catkin list
 - tesseract_rviz
 - vhacd
 
-Additional CMake Args:       -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 -DPYTHON_LIBRARY_DIR=/usr/lib/x86_64-linux-gnu
-
 -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 -DPYTHON_LIBRARY_DIR=/usr/lib/x86_64-linux-gnu
 
 1. conda deactivate
@@ -268,13 +362,6 @@ kinova_vision
 
 6. conda deactivate
 face_detection
-Note: install dlib from C++ http://dlib.net/compile.html
-mkdir build
-cd build/
-cmake ..
-cmake --build . --config Release
-make -j16
-make install
 
 7. conda deactivate
 pr_assets
@@ -300,7 +387,6 @@ sla_feeding
 
 note: 
 catkin config --skiplist apriltag pinocchio ifopt ros_industrial_cmake_boilerplate descartes_light osqp osqp_eigen ruckig tesseract_common tesseract_command_language tesseract_msgs tesseract_support tesseract_scene_graph tesseract_collision tesseract_srdf tesseract_time_parameterization tesseract_urdf tesseract_state_solver tesseract_kinematics tesseract_environment tesseract_visualization trajopt_utils trajopt_sco trajopt trajopt_ifopt trajopt_sqp tesseract_motion_planners tesseract_task_composer tesseract_examples tesseract_qt tesseract_rosutils tesseract_monitoring tesseract_planning_server tesseract_ros_examples tesseract_rviz vhacd geometry2 tf2_msgs tf2 tf2_bullet tf2_eigen tf2_py tf2_ros tf2_geometry_msgs tf2_kdl test_tf2 tf2_sensor_msgs tf2_tools
-
 ```
 
 ### Build Steps (updated 20230605)
@@ -406,7 +492,7 @@ apt-get update
 
 which can be found at this [repo](https://github.com/tesseract-robotics/tesseract_qt/blob/main/.add-gazebo-ppa).
 
-### Build steps and troubleshooting for AnyGrasp
+### AnyGrasp
 
 Most of the building issues are due to version conflicts among packages. 
 
@@ -419,8 +505,11 @@ Those combinations are tested.
 - `cuda11.0`,  `python 3.6`with trash low performance GPU `GeForce 1660Ti`
 - `cuda11.0`, `python 3.8`, with trash low performance GPU `GeForce 1660Ti`
 - `cuda11.1`, `python 3.8`, with `RTX A2000 Laptop`
+- `cuda11.1`, `python 3.8`, with `GeForce 3050Ti`
 
 Please note that using AnyGrasp for grasp generation consumes approximately 1.6GB of GPU memory, as tested on an RTX A2000 with 4GB of memory. You can decrease the resolution of the screen or close VScode, Typora, Google Chrome, etc,. to reduce the usage of GPU.
+
+Note: cuda11.1 is cuda 11.1.105
 
 ##### Shortcut
 
@@ -438,7 +527,9 @@ conda env create -f anygrasp.yml
 conda activate anygrasp
 ```
 
-In this way you will create a pre-configured virtual environment, ensuring no version conflicts occur. Then you can start from step 3 in [Normal operation](#####Normal operation). Alternatively, you can set up the virtual environment on your own (just follow [Normal operation](#####Normal operation)). One can find the available `yml` files at [venv](https://github.com/zingff/anygrasp_sdk/tree/master/grasp_generation/config/venv).
+In this way you will create a pre-configured virtual environment, ensuring no version conflicts occur. Notw that in this way, you may meet a pip error, this is normal, just ignore it and then you can start from step 3 in [Normal operation](#####Normal operation). One can find the available `yml` files at [venv](https://github.com/zingff/anygrasp_sdk/tree/master/grasp_generation/config/venv). 
+
+Alternatively, you can create a new virtual environment following [Normal operation](#####Normal operation).
 
 ##### Normal operation
 
@@ -483,9 +574,10 @@ In this way you will create a pre-configured virtual environment, ensuring no ve
      
      ```
 
-3. [anygrasp_sdk](https://github.com/graspnet/anygrasp_sdk): just follow the official tutorials to install it. Possible issues are listed in [Issues](###Issues)
-4. `anygrasp_generation` setup: this is a custom package used to generate grasp for objects utilizing `RGBD` streams from Kinova Gen3. Please review the following key points:
-   
+3. [anygrasp_sdk](https://github.com/graspnet/anygrasp_sdk): just follow the [official tutorials](https://github.com/graspnet/anygrasp_sdk#installation) to install it. Potential issues are listed in [Issues](###Issues).
+
+4. `anygrasp_generation` setup: this is a custom package used to generate grasp for objects utilizing `RGBD` streams provided by Kinova Gen3. Please review the following key points before you running a demo:
+
    - `python` version: `gsnet.so` and `lib_cxx.so` are consistent with the venv python version.
    - `license`: this dir should be placed correctly under `anygrasp_sdk/grasp_generation/`
    - checkpoint file `log` should be placed under : `anygrasp_sdk/grasp_generation/`
@@ -535,15 +627,18 @@ In this way you will create a pre-configured virtual environment, ensuring no ve
 
    ```bash
    pip install scikit-learn
+   pip install open3d
    ```
 
    you need to run
 
    ```
-       pip install -r requirements.txt
+   pip install -r requirements.txt
    ```
 
    again to ensure that all requirements are satisfied. This procedure may be executed several times. 
+
+   Note: error may permanently occur when you run `pip install -r requirements.txt`, so you can try manually install `scikit-learn`, `open3d`, `graspnetAPI`, etc,. in `requirenments.txt`. Just ignore the error after running `pip install -r requirements.txt`.
 
 3. Unknown error: try running
 
@@ -571,7 +666,40 @@ In this way you will create a pre-configured virtual environment, ensuring no ve
    Error from AnyGrasp server:  CUDA out of memory. Tried to allocate 28.00 MiB (GPU 0; 3.78 GiB total capacity; 319.96 MiB already allocated; 91.00 MiB free; 334.00 MiB reserved in total by PyTorch)
    ```
 
-   
+### Pinocchio
+
+Issue:
+
+```bash
+CMake Error at /home/zing/mealAssistiveRobot/sla_ws/src/pinocchio/cmake/package-config.cmake:110 (find_package):
+  By not providing "Findeigenpy.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "eigenpy", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "eigenpy"
+  (requested version 2.7.10) with any of the following names:
+
+    eigenpyConfig.cmake
+    eigenpy-config.cmake
+
+  Add the installation prefix of "eigenpy" to CMAKE_PREFIX_PATH or set
+  "eigenpy_DIR" to a directory containing one of the above files.  If
+  "eigenpy" provides a separate development package or SDK, be sure it has
+  been installed.
+Call Stack (most recent call first):
+  CMakeLists.txt:167 (ADD_PROJECT_DEPENDENCY)
+```
+
+Try: install `ros-noetic-eigenpy` or follow this [link](https://stack-of-tasks.github.io/pinocchio/download.html).
+
+### Eigen
+
+```bash
+sudo apt install libeigen3-dev
+sudo ln -s /usr/include/eigen3/Eigen /usr/include/Eigen
+```
+
+
 
 ### Some links
 
@@ -1145,14 +1273,14 @@ General process to connect the robot via `Ethernet`:
     * Netmask: `255.255.255.0` or `24`
   - In browser, switch to `192.168.1.10` and you can assess the `KINOVA ® KORTEX™ Web App`.
   - If the connection is configured correctly, the Web application should launch and present a login window. Enter the following credentials:
-     * username: admin
-     * password: admin
+    * username: admin
+    * password: admin
   - Then you can monitor the robot status and play some pre-installed demos (home, zero, packaging and retract). 
     **NOTES** 
   - If you are using VPN on your ubuntu, remember to add `ignore hosts`:
 
-      - `Settings` -> `Network` -> `VPN` -> `Network Proxy` -> `Manual` -> `Ignore Hosts`
-      - Add  some hosts that you wish not to connect via proxy. For Kinvoa Gen3, you would add `192, 168, 1, *`. For campus website, you would add `*.sjtu.edu.cn`
+    - `Settings` -> `Network` -> `VPN` -> `Network Proxy` -> `Manual` -> `Ignore Hosts`
+    - Add  some hosts that you wish not to connect via proxy. For Kinvoa Gen3, you would add `192, 168, 1, *`. For campus website, you would add `*.sjtu.edu.cn`
   - You could click the `Hold` buttom to ensure the execution of those demos by a single click.
   - Do pay attention to your safety when excute those demos since there are no forque sensing in those processes.
 
@@ -1210,7 +1338,6 @@ This is implemented via Tesseract and the algorithm is given below.
    & ...
    \end{align}
    $$
-   
 
 ## Order in euler angles
 
@@ -1318,6 +1445,7 @@ ImportError: /lib/x86_64-linux-gnu/libp11-kit.so.0: undefined symbol: ffi_type_p
 
 
 ## 20231001 ubuntu reinstall
+
 cuda_11.0.3_450.51.06_linux.run
 Anaconda3-2023.09-0-Linux-x86_64.sh
 NVIDIA-Linux-x86_64-525.125.06.run
