@@ -20,7 +20,7 @@ This part shows the requirements you could/should configure first before you bui
 
 ### Package list (catkin list)
 
-All of those packages can be download at [zingff](https://github.com/zingff).  You can take a glimpse at the following list to know what each package is for (see in this [part](###Recommended build procedure ). Note that most packages have their official website and updated release, but some of their source code is modified due to my custom usage (marked in **blod**), so it is recommended to download all those packages from my [GitHub account](https://github.com/zingff) unless you know exactly what you are doing. Any package with a different version (especially `tesseract`-related packages) would potentially lead to unknown error and build failure. I will list the official GitHub for those third-party packages. Custom packages are in *Italic*.
+All of those packages can be download at [zingff](https://github.com/zingff).  You can take a glimpse at the following list to know what each package is for (see in this [part](###Recommended build procedure )). Note that most packages have their official website and updated release, but some of their source code is modified due to my custom usage (marked in **blod**), so it is recommended to download all those packages from my [GitHub account](https://github.com/zingff) unless you know exactly what you are doing. Any package with a different version (especially `tesseract`-related packages) would potentially lead to unknown error and build failure. I will list the official GitHub for those third-party packages. Custom packages are in *Italic*.
 
 1. *anygrasp_generation*
 2. apriltag
