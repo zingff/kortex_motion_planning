@@ -9,10 +9,11 @@
 This part shows the requirements you could/should configure first before you build the `feeding task` workspace.
 
 1. Ubuntu: 20.04 LTS
-2. Nvidia driver: 535 or other suitable version
-3. cuda: 11.1/11.0
-4. anaconda: any version
-5. ROS: noetic
+2. Nvidia GPU: >= GeForce 1660 Ti (if AnyGrasp)
+3. Nvidia driver: compatible version (if AnyGrasp)
+4. cuda: 11.1/11.0 (if AnyGrasp)
+5. anaconda: any version
+6. ROS: noetic
 
 
 
@@ -110,7 +111,7 @@ All of those packages can be download at [zingff](https://github.com/zingff).  Y
    ssh -T git@github.com  # for test
    ```
 
-2. Run `download_repos.sh`. or use a `wstool` method (recommended):
+2. Run `download_repos.sh` (not recommended) or use a `wstool` method (recommended):
 
    ```bash
    cd ~/mealAssistiveRobot/sla_ws/src
@@ -271,9 +272,17 @@ ln -s mealAssistiveRobot/sla_ws/src/feeding_task/bash ~/bash
 
 20231226：陈老师今天上午又来实验室作遗言宣告，像领导视察工作，每个人都要说两句，是怕活不到明天了吗？
 
+20240110：外面做实验遇到zh，来和我说话：“上海之所以是上海，你会发现是有原因的……中国100多年的城市，你看看上海的底蕴……”你们上海老祖宗的脸面都被这个土著丢光了，我反嘴一句：“底蕴这个词就和上海没关系吧？”真是开了眼了。年纪轻轻说上海好因为上海医院多医疗条件好，怎么？怕自己活不到50岁？有不治之症别遗传给你马上要出生的女儿。真是开了眼了。
+
 20240123：真是无语，之前cwd一直拖着我不让我去医院做实验，昨天开足会索尼一说要给24年合作的60w这沙比就松口了，让我年前去医院做实验，我看他是想钱想疯了。
 
-20240124: meet ugly guy when peeing.....真晦气
+20240124: meet ugly guy when peeing.....真晦气、
+
+20240122：md怼cwd怼得真舒服，我也不明着骂你，就学你阴阳怪气，顺带连傅山和张晗一起阴阳。
+
+20240126：cwd太沙比了，去赫尔森康复医院做患者实验的一天，早不做晚不做，偏偏临近放假才做。令人感动的一点是，问患者觉得我们的助餐系统是否安全，他说，你们做了安全保障，那就是绝对的安全。说真的，我并不是完全有底气说那玩意儿就是安全的。anyway，cwd沙比。
+
+20240128：zh侬母亡了阿，搞锤子poster？偌大一个实验室23年就发了五六篇文章，说出来也不怕人笑话，top3高校一个二三十人体量的实验室，一年就这么几篇文章？文章数量<博士生数量，就他妈的离谱，zh纯纯蠢逼，整些花活，不知道上哪儿偷了个poster模板，自己研究透了吗？什么鸡巴烂模板？纯纯脑瘫行为，老子就是不做，作尼玛，下周二还要去医院做实验，做锤子？实验周五做了紧接着周二又做，就是因为索尼周五没来，于是过两天又做？认尼作父是吧，想钱想疯了，一给钱就做是吧，不给钱我看怕不是要推倒年后，30万能买你棺材上一块板子不？下半年的30万买另一快板？这尼玛六块板子，索尼的项目要做三年呢草泥马的沙比。做一次实验兴师动众，医院的护工医生估计也烦死了吧，领导一句话就要把病房收拾得干干净净，还以为是什么大人物来了，结果是这么个烂货机器人要进来做实验？zh上周搬到二期了，真是晦气，希望他以后说话小声点，吵到我了定是要现开发的。
 
 ## Previous build instructions
 
@@ -507,7 +516,7 @@ Those combinations are tested.
 - `cuda11.1`, `python 3.8`, with `RTX A2000 Laptop`
 - `cuda11.1`, `python 3.8`, with `GeForce 3050Ti`
 
-Please note that using AnyGrasp for grasp generation consumes approximately 1.6GB of GPU memory, as tested on an RTX A2000 with 4GB of memory. You can decrease the resolution of the screen or close VScode, Typora, Google Chrome, etc,. to reduce the usage of GPU.
+Please note that using AnyGrasp for grasp generation consumes approximately 1.6GB of GPU memory, as tested on an RTX A2000 with 4GB of memory on ThinkPad P15; 2.5GB on ROG 13 with GeForce 3050Ti. You can decrease the resolution of the screen or close VScode, Typora, Google Chrome, etc,. to reduce the usage of GPU.
 
 Note: cuda11.1 is cuda 11.1.105
 
@@ -638,7 +647,9 @@ Alternatively, you can create a new virtual environment following [Normal operat
 
    again to ensure that all requirements are satisfied. This procedure may be executed several times. 
 
-   Note: error may permanently occur when you run `pip install -r requirements.txt`, so you can try manually install `scikit-learn`, `open3d`, `graspnetAPI`, etc,. in `requirenments.txt`. Just ignore the error after running `pip install -r requirements.txt`.
+   Note: error may permanently occur when you run `pip install -r requirements.txt`, so you can try manually install `scikit-learn`, `open3d`, `graspnetAPI`, etc,. in `requirenments.txt`. Just ignore the error after running `pip install -r requirements.txt`.d
+
+   <u>**IMPORTANT** In a word, run `pip install <pkg>` and `pip install -r <xxx>` again and again and again.</u>
 
 3. Unknown error: try running
 
@@ -665,6 +676,21 @@ Alternatively, you can create a new virtual environment following [Normal operat
    ```bash
    Error from AnyGrasp server:  CUDA out of memory. Tried to allocate 28.00 MiB (GPU 0; 3.78 GiB total capacity; 319.96 MiB already allocated; 91.00 MiB free; 334.00 MiB reserved in total by PyTorch)
    ```
+
+5. Nvidia driver vanishes after system upgrade
+
+   ```
+   NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver
+   ```
+
+   Try: using `dkms(Dynamic Kernel Module Support)`.
+
+   ```
+   sudo apt install dkms
+   sudo dkms install -m nvidia -v 535.146.02
+   ```
+
+   you can find the right version number at `/usr/src/nvidia-535.146.02`.
 
 ### Pinocchio
 
@@ -1280,7 +1306,7 @@ General process to connect the robot via `Ethernet`:
   - If you are using VPN on your ubuntu, remember to add `ignore hosts`:
 
     - `Settings` -> `Network` -> `VPN` -> `Network Proxy` -> `Manual` -> `Ignore Hosts`
-    - Add  some hosts that you wish not to connect via proxy. For Kinvoa Gen3, you would add `192, 168, 1, *`. For campus website, you would add `*.sjtu.edu.cn`
+    - Add  some hosts that you wish not to connect via proxy. For Kinvoa Gen3, you would add `192.168.1.*`. For campus website, you would add `*.sjtu.edu.cn`
   - You could click the `Hold` buttom to ensure the execution of those demos by a single click.
   - Do pay attention to your safety when excute those demos since there are no forque sensing in those processes.
 
