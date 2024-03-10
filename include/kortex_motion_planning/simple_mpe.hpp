@@ -104,6 +104,8 @@ public:
     kortex_motion_planning::GetUtensilResponse &guResponse
   );
 
+  bool getUtensilAction();
+
   bool uprightSkewerAction(
     kortex_motion_planning::UprightSkewerActionRequest &usaRequest,
     kortex_motion_planning::UprightSkewerActionResponse &usaResponse
@@ -150,6 +152,10 @@ public:
   double goal_orientation_tolerance_;
   double planning_time_;
   double planning_attempts_number_;
+
+  // get utensil
+  std::vector<double> holder_positions_;
+  std::vector<double> utensil_positions;
 };
 
 #endif  // SIMPLE_MPE_HPP

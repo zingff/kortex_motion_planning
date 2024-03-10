@@ -21,7 +21,7 @@ This part shows the requirements you could/should configure first before you bui
 
 ### Package list (catkin list)
 
-All of those packages can be download at [zingff](https://github.com/zingff).  You can take a glimpse at the following list to know what each package is for (see in this [part](###Recommended build procedure)). Note that most packages have their official website and updated release, but some of their source code is modified due to my custom usage (marked in **blod**), so it is recommended to download all those packages from my [GitHub account](https://github.com/zingff) unless you know exactly what you are doing. Any package with a different version (especially `tesseract`-related packages) would potentially lead to unknown error and build failure. I will list the official GitHub for those third-party packages. Custom packages are in *Italic*.
+All of those packages can be download from [zingff](https://github.com/zingff).  You can take a glimpse at the following list to know what each package is for (see in this [part](###Recommended build procedure)). Note that most packages have their official website and updated release, but some of their source code is modified due to my custom usage (marked in **blod**), so it is recommended to download all those packages from my [GitHub account](https://github.com/zingff) unless you know exactly what you are doing. Any package with a different version (especially `tesseract`-related packages) would potentially lead to unknown error and build failure. I will list the official GitHub for those third-party packages. Custom packages are in *Italic*.
 
 1. *anygrasp_generation*
 2. apriltag
@@ -128,7 +128,7 @@ All of those packages can be download at [zingff](https://github.com/zingff).  Y
 1. **OPTIONAL**: additional cmake args: (skip)
    `-DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.8 -DPYTHON_LIBRARY_DIR=/usr/lib/x86_64-linux-gnu`
 
-2. **BUILDING TOOL**: install `python3-catkin-tools`, or you can use `catkin_make`.
+2. **BUILDING TOOL**: install `python3-catkin-tools` (recommended, see [tutorials](https://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html)), or you can use `catkin_make`.
 
 3. **DEPENDENCIES**: make sure all deps are satisfied before building.
 
@@ -140,17 +140,17 @@ Other general steps for building a ROS catkin workspace (such as `rosdep`, `wsto
 
 > last update: 20231220
 
-You can build the workspace following the following order. Or you can build the whole workspace one-off, but I never try.
+You can build the workspace with the following the following order (**Recommended**). Or you can build the whole workspace one-off, but I never try. You can build partial packages if for partial functions.
 
 1. `apriltag`: pose estimation for QR code
 
-   apriltag, apriltag_ros
+   Content(s): apriltag, apriltag_ros
 
    Note: then skiplist apriltag
 
 2. `pinocchio`: dynamic modeling and computation
 
-   pinocchio
+   Content(s): pinocchio
 
    Note: then skiplist pinocchio
 
@@ -158,7 +158,7 @@ You can build the workspace following the following order. Or you can build the 
 
    Todo: take care of the source code, modify gitignore
 
-3. `ros_kortex`: ros package for interacting with Kinova Gen3, just pay attention to `kortex_driver`. Note that `kortex_driver` is modified for some custom reason, do not use the [official version](https://github.com/Kinovarobotics/ros_kortex) since it may not be compatible with the feeding-related codes.
+3. `ros_kortex`: ros package for interacting with Kinova Gen3, just pay attention to `kortex_driver`. Note that `kortex_driver` is modified for some custom reason, do **NOT** use the [official version](https://github.com/Kinovarobotics/ros_kortex) since it may not be compatible with the feeding-related codes.
 
    see [how to build](https://github.com/Kinovarobotics/ros_kortex#build):
 
@@ -173,25 +173,25 @@ You can build the workspace following the following order. Or you can build the 
    rosdep install --from-paths src --ignore-src -y -r  # recommend to run this line at very beginning
    ```
 
-   gazebo_version_helpers gazebo_grasp_plugin kortex_control kortex_description gen3_lite_gen3_lite_2f_move_it_config gen3_move_it_config gen3_robotiq_2f_140_move_it_config gen3_robotiq_2f_85_move_it_config kortex_driver kortex_examples kortex_gazebo kortex_move_it_config roboticsgroup_upatras_gazebo_plugins
+   Content(s): gazebo_version_helpers gazebo_grasp_plugin kortex_control kortex_description gen3_lite_gen3_lite_2f_move_it_config gen3_move_it_config gen3_robotiq_2f_140_move_it_config gen3_robotiq_2f_85_move_it_config kortex_driver kortex_examples kortex_gazebo kortex_move_it_config roboticsgroup_upatras_gazebo_plugins
 
-4. `geometry2`: to shield some incessant TF warnings
+4. `geometry2`: to shield some incessant TF warnings, optional
 
-   geometry2 tf2_msgs tf2 tf2_bullet tf2_eigen tf2_py tf2_ros tf2_geometry_msgs tf2_kdl test_tf2 tf2_sensor_msgs tf2_tools
+   Content(s): geometry2 tf2_msgs tf2 tf2_bullet tf2_eigen tf2_py tf2_ros tf2_geometry_msgs tf2_kdl test_tf2 tf2_sensor_msgs tf2_tools
 
 5. `tesseract`: libraries for motion planning
 
-   If any error occurs, see [official tutorial](https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html).
+   If any error occurs, see [official tutorial](https://tesseract-docs.readthedocs.io/en/latest/_source/intro/getting_started_doc.html) and find issues at [issues1](https://github.com/tesseract-robotics/tesseract_planning/issues), [issues2](https://github.com/tesseract-robotics/tesseract/issues), etc.,.
 
-   ifopt ros_industrial_cmake_boilerplate descartes_light osqp osqp_eigen ruckig tesseract_common tesseract_command_language tesseract_msgs tesseract_support tesseract_scene_graph tesseract_collision tesseract_srdf tesseract_time_parameterization tesseract_urdf tesseract_state_solver tesseract_kinematics tesseract_environment tesseract_visualization trajopt_utils trajopt_sco trajopt trajopt_ifopt trajopt_sqp tesseract_motion_planners tesseract_task_composer tesseract_examples tesseract_qt tesseract_rosutils tesseract_monitoring tesseract_planning_server tesseract_ros_examples tesseract_rviz vhacd 
+   Content(s): ifopt ros_industrial_cmake_boilerplate descartes_light osqp osqp_eigen ruckig tesseract_common tesseract_command_language tesseract_msgs tesseract_support tesseract_scene_graph tesseract_collision tesseract_srdf tesseract_time_parameterization tesseract_urdf tesseract_state_solver tesseract_kinematics tesseract_environment tesseract_visualization trajopt_utils trajopt_sco trajopt trajopt_ifopt trajopt_sqp tesseract_motion_planners tesseract_task_composer tesseract_examples tesseract_qt tesseract_rosutils tesseract_monitoring tesseract_planning_server tesseract_ros_examples tesseract_rviz vhacd 
 
 6. `ros_kortex_vision`: for utilizing depth and color streams from Kinova Gen3
 
-   kinova_vision
+   Content(s): kinova_vision
 
 7. `face_detection`: for face detection and mouth pose estimation based on `dlib`
 
-   face_detection
+   Content(s): face_detection
 
    ```bash
    mkdir build
@@ -208,35 +208,35 @@ You can build the workspace following the following order. Or you can build the 
 
 8. `pr_assets`: include some useful assets.
 
-   pr_assets
+   Content(s): pr_assets
 
    Note: this package is optional
 
 9. `door_open`: open door with admittance controller
 
-   door_open_task admittance_controller_d
+   Content(s): door_open_task admittance_controller_d
 
 10. `grasp generation`: generate grasps for any objects
 
-    anygrasp_generation
+    Content(s): anygrasp_generation
 
-11. `object_grasping`: for object grasping, independent of feeding task. ignore. 
+11. `object_grasping`: for object grasping, independent of feeding task, **deprecated**. 
 
-    gpd_pick_and_place
+    Content(s): gpd_pick_and_place
 
 12. `motion planning`: formulate optimization problem based on `tesseract`; execute motion after solving the problem; real-time collision detection; other functional modules used in feeding task.
 
-    kortex_motion_planning 
+    Content(s): kortex_motion_planning 
 
     Note: install `qcustomplot` first, ignore, fixed
 
-    Note: build `srv` first
+    Note: build `srv` first, very **IMPORTANT**
 
     Todo: modify to one-off build.
 
-13. `task-level package`: most focuses on task manager for feeding task, a finite state machine is empolyed; voice module is to be implemented within this package.
+13. `task-level package`: mainly focuses on task manager for feeding task, a finite state machine is empolyed; voice module is to be implemented within this package.
 
-    feeding_task
+    Content(s): feeding_task
 
 14. ~~pinocchio (ahead, skip)~~
 
@@ -250,7 +250,7 @@ You can build the workspace following the following order. Or you can build the 
 
     ~~object_detection (deprecated)~~
 
-After build the workspace, some tips for convenience:
+After build the workspace, some tips for convenient usage:
 
 1. run
 
@@ -258,10 +258,11 @@ After build the workspace, some tips for convenience:
 ln -s mealAssistiveRobot/sla_ws/src/feeding_task/bash ~/bash
 ```
 
-2. add source file in `.bashrc`.
+2. add source line in `.bashrc`.
 3. create several conda virtual environments, see [AnyGrasp](###AnyGrasp).
    1. anygrasp: if you want to use AnyGrasp for grasp generation
    2. sam: if you want to use Segment Anything for object segmentation.
+   3. voice
 
 
 ### Slave diary
@@ -280,13 +281,13 @@ ln -s mealAssistiveRobot/sla_ws/src/feeding_task/bash ~/bash
 
 20240122：md怼cwd怼得真舒服，我也不明着骂你，就学你阴阳怪气，顺带连傅山和张晗一起阴阳。
 
-20240126：cwd太沙比了，去赫尔森康复医院做患者实验的一天，早不做晚不做，偏偏临近放假才做。令人感动的一点是，问患者觉得我们的助餐系统是否安全，他说，你们做了安全保障，那就是绝对的安全。说真的，我并不是完全有底气说那玩意儿就是安全的。anyway，cwd沙比。
+20240126：cwd太沙比了，去赫尔森康复医院做患者实验的一天，早不做晚不做，偏偏临近放假才做。anyway，cwd沙比。
 
 20240128：zh侬母亡了阿，搞锤子poster？偌大一个实验室23年就发了五六篇文章，说出来也不怕人笑话，top3高校一个二三十人体量的实验室，一年就这么几篇文章？文章数量<博士生数量，就他妈的离谱，zh纯纯蠢逼，整些花活，不知道上哪儿偷了个poster模板，自己研究透了吗？什么鸡巴烂模板？纯纯脑瘫行为，老子就是不做，作尼玛，下周二还要去医院做实验，做锤子？实验周五做了紧接着周二又做，就是因为索尼周五没来，于是过两天又做？认尼作父是吧，想钱想疯了，一给钱就做是吧，不给钱我看怕不是要推倒年后，30万能买你棺材上一块板子不？下半年的30万买另一快板？这尼玛六块板子，索尼的项目要做三年呢草泥马的沙比。做一次实验兴师动众，医院的护工医生估计也烦死了吧，领导一句话就要把病房收拾得干干净净，还以为是什么大人物来了，结果是这么个烂货机器人要进来做实验？zh上周搬到二期了，真是晦气，希望他以后说话小声点，吵到我了定是要现开发的。
 
 ## Previous build instructions
 
-Those instruction are out of date, deprecated. for reference only.
+**Those instruction are out of date, deprecated. for reference only.**
 
 ### Build Steps (last update 20231001)
 
@@ -503,7 +504,7 @@ which can be found at this [repo](https://github.com/tesseract-robotics/tesserac
 
 ### AnyGrasp
 
-Most of the building issues are due to version conflicts among packages. 
+Most building issues are due to version conflicts among packages. 
 
 #### Build steps
 
@@ -518,7 +519,7 @@ Those combinations are tested.
 
 Please note that using AnyGrasp for grasp generation consumes approximately 1.6GB of GPU memory, as tested on an RTX A2000 with 4GB of memory on ThinkPad P15; 2.5GB on ROG 13 with GeForce 3050Ti. You can decrease the resolution of the screen or close VScode, Typora, Google Chrome, etc,. to reduce the usage of GPU.
 
-Note: cuda11.1 is cuda 11.1.105
+Note: cuda11.1 is cuda 11.1.105, currently used on ROG 13
 
 ##### Shortcut
 
@@ -536,7 +537,7 @@ conda env create -f anygrasp.yml
 conda activate anygrasp
 ```
 
-In this way you will create a pre-configured virtual environment, ensuring no version conflicts occur. Notw that in this way, you may meet a pip error, this is normal, just ignore it and then you can start from step 3 in [Normal operation](#####Normal operation). One can find the available `yml` files at [venv](https://github.com/zingff/anygrasp_sdk/tree/master/grasp_generation/config/venv). 
+In this way you will create a pre-configured virtual environment, ensuring no version conflicts occur. Note that in this way, **you may meet a pip error, yet it is normal,** just ignore it and then you can start from step 3 in [Normal operation](#####Normal operation). One can find the available `yml` files at [venv](https://github.com/zingff/anygrasp_sdk/tree/master/grasp_generation/config/venv). 
 
 Alternatively, you can create a new virtual environment following [Normal operation](#####Normal operation).
 
@@ -599,9 +600,9 @@ Alternatively, you can create a new virtual environment following [Normal operat
 
    - `cuda11.0`, `python 3.8`, `numpy 1.23.4`, GeForce 1660Ti
 
-   - `cuda11.1`, `python 3.8`, `numpy 1.23.4`, RTX A2000
+   - `cuda11.1`, `python 3.8`, `numpy 1.23.4`, RTX A2000, GeFroce 3050Ti
 
-   you can just simply set version of `numpy` by replacing `numpy` with `numpy==1.23.4` in [`anygrasp_sdk/requirements.txt`](https://github.com/graspnet/anygrasp_sdk/blob/main/requirements.txt). 
+   you can just simply set version of `numpy` by replacing `numpy` with `numpy==1.23.4` in [`anygrasp_sdk/requirements.txt`](https://github.com/graspnet/anygrasp_sdk/blob/main/requirements.txt): 
 
    ```
    numpy==1.23.4 # numpy==1.19.2
@@ -691,6 +692,14 @@ Alternatively, you can create a new virtual environment following [Normal operat
    ```
 
    you can find the right version number at `/usr/src/nvidia-535.146.02`.
+
+6. Feature id changes. When run code related to AnyGrasp, it first verify whether your licence matches your feature id (this is encoded with a special logic by graspnet due to the ip reason). If the check fails, known reasons: 
+
+   1. system update (not sure)
+   2. VPN, WSL, docker is used.
+   3. docking station or some adapter (RJ45 to usb-C, etc,.) is used. 
+
+   You are supposed to apply for the license after you make sure the stable way to connect the PC to the manipulator. After getting the license, do **NOT** update your system, **NOT** change docking station or adapter.
 
 ### Pinocchio
 
@@ -902,7 +911,7 @@ A modern, light-weight, [Eigen](http://eigen.tuxfamily.org/)-based C++ interface
 
 The *OSQP* (Operator Splitting Quadratic Program) solver is a numerical optimization package for solving problems in the form.
 
-# Tesseract and TrajOpt
+# Motion planning using Tesseract and TrajOpt
 
 ## Workflow for trajectory planning
 
@@ -1285,7 +1294,7 @@ error
 
 437 + 437
 
-# Kinova
+# Kinova-related
 
 ## Gen3 connection instructions
 

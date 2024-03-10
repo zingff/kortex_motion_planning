@@ -314,6 +314,20 @@ add_dependencies(simple_jcmpe
   ${catkin_EXPORTED_TARGETS}
 )
 
+
+# get utensil action
+add_executable(get_utensil_action
+  src/get_utensil_action.cpp
+	src/simple_mpe.cpp
+  src/utilities/ros_utilities.cpp
+)
+target_link_libraries(get_utensil_action 
+  ${catkin_LIBRARIES}
+)
+add_dependencies(get_utensil_action 
+  ${catkin_EXPORTED_TARGETS}
+)
+
 # get state
 add_executable(get_state
   src/utilities/get_state.cpp

@@ -23,6 +23,10 @@ SimpleMpe::SimpleMpe(ros::NodeHandle nh_, std::string planning_group_)
     getROSParam(nh_, "/rosConfig/simpleCMPEConfig/planningTime", planning_time_);
     getROSParam(nh_, "/rosConfig/simpleCMPEConfig/goalOrientationTorlerance", goal_orientation_tolerance_);
 
+    getROSParam(nh_, "/utensil/holderPosition", holder_positions_);
+    getROSParam(nh_, "/utensil/utensilPosition", utensil_positions);
+
+
 }
 
 void SimpleMpe::getCurrentPositions()
@@ -60,7 +64,7 @@ bool SimpleMpe::moveToJoint(const std::vector<double>& joint_positions) {
 
         // Execute
         moveit::planning_interface::MoveItErrorCode execution_result = move_group_ptr_->execute(joint_motion_plan_);
-        ros::Duration(1.0).sleep();
+        ros::Duration(0.1).sleep();
     
         bool execution_success = (execution_result == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         if (execution_success) {
@@ -102,6 +106,8 @@ bool SimpleMpe::moveToCartesian(geometry_msgs::Pose target_pose){
     this->move_group_ptr_->setGoalOrientationTolerance(goal_orientation_tolerance_);
     this->move_group_ptr_->setPlanningTime(planning_time_);
     this->move_group_ptr_->setNumPlanningAttempts(planning_attempts_number_);
+    // todo: modify  vel, acc, etc., params with ros param server
+    this->move_group_ptr_->setMaxAccelerationScalingFactor(0.5);
 
     bool plan_success = (this->move_group_ptr_->plan(this->cartesian_motion_plan_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     if (!plan_success) {
@@ -110,7 +116,7 @@ bool SimpleMpe::moveToCartesian(geometry_msgs::Pose target_pose){
     }
 
     moveit::planning_interface::MoveItErrorCode execution_result = this->move_group_ptr_->execute(this->cartesian_motion_plan_);
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.1).sleep();
     bool execution_success = false;
     if (execution_result == moveit::planning_interface::MoveItErrorCode::SUCCESS) {
         execution_success = true;
@@ -217,6 +223,38 @@ bool SimpleMpe::getUtensil(
 }
 
 
+bool SimpleMpe::getUtensilAction()
+{
+  moveToFeedingInitialPositions();
+  ros::Duration(0.2).sleep();
+  sendGripperCommand(0);
+  ros::Duration(0.2).sleep();
+  ROS_INFO(GREEN "Ready to move to utensil position." RESET);
+  setJointGroup(holder_positions_[0], 
+                holder_positions_[1], 
+                holder_positions_[2], 
+                holder_positions_[3], 
+                holder_positions_[4], 
+                holder_positions_[5], 
+                holder_positions_[6]
+  );
+  moveToJoint(joint_positions_);
+  ros::Duration(0.5).sleep();
+  sendGripperCommand(1.0);
+  ros::Duration(0.2).sleep();
+  setJointGroup(utensil_positions[0], 
+                utensil_positions[1], 
+                utensil_positions[2], 
+                utensil_positions[3], 
+                utensil_positions[4], 
+                utensil_positions[5], 
+                utensil_positions[6]
+  );
+  moveToJoint(joint_positions_);
+  ros::Duration(0.2).sleep(); 
+}
+
+
 bool SimpleMpe::kortexSimpleJointMotionPlanningAndExecution(
   kortex_motion_planning::KortexSimpleJmpe::Request &ksjmpeRequest,
   kortex_motion_planning::KortexSimpleJmpe::Response &ksjmpeResponse
@@ -247,7 +285,7 @@ bool SimpleMpe::kortexSimpleCartesianMotionPlanningAndExecution(
   target_pose_.orientation = kscmpeRequest.target_pose.orientation;
   bool success;
   success = moveToCartesian(target_pose_);
-  ros::Duration(1.0).sleep();
+  ros::Duration(0.1).sleep();
   if (success)
   {
     ROS_INFO(GREEN "Cartesian motion planning and execution succeeded!" RESET);
